@@ -1,0 +1,267 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Noto+Sans+Thai:wght@300;400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #fafaf8;
+  --bg2: #f2f0eb;
+  --text: #1a1a18;
+  --text2: #555550;
+  --text3: #999990;
+  --border: #e0ddd6;
+  --accent: #1a5c3a;
+  --accent-light: #e8f2ec;
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans: 'Noto Sans Thai', sans-serif;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ─── Layout ─── */
+.site-wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ─── Nav ─── */
+nav {
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.nav-inner {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.nav-brand {
+  font-family: var(--serif);
+  font-size: 17px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.nav-links {
+  display: flex;
+  gap: 0;
+  list-style: none;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  font-size: 13px;
+  color: var(--text2);
+  text-decoration: none;
+  padding: 4px 14px;
+  border-radius: 999px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+/* ─── Page header ─── */
+.page-header {
+  padding: 3rem 0 2rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2.5rem;
+}
+
+.page-tag {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.page-title {
+  font-family: var(--serif);
+  font-size: 38px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: var(--text2);
+  margin-top: 0.5rem;
+  font-weight: 300;
+}
+
+/* ─── Section ─── */
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.section-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ─── Cards ─── */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 12px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.card-meta {
+  font-size: 12px;
+  color: var(--text3);
+  margin-bottom: 6px;
+}
+
+.card-body {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.65;
+}
+
+/* ─── Pills ─── */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  background: var(--bg2);
+}
+
+.pill.accent {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: #b8d8c4;
+}
+
+/* ─── Topic link cards ─── */
+.topic-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.topic-link:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.topic-link-title {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.topic-link-desc {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+.topic-arrow {
+  font-size: 18px;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+
+/* ─── Article prose ─── */
+.prose h2 {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 2rem 0 0.75rem;
+  color: var(--text);
+}
+
+.prose p {
+  margin-bottom: 1rem;
+  color: var(--text2);
+  font-size: 15px;
+}
+
+.prose ul {
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--text2);
+  font-size: 15px;
+}
+
+.prose li {
+  margin-bottom: 0.4rem;
+}
+
+/* ─── Footer ─── */
+footer {
+  margin-top: 4rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* ─── Breadcrumb ─── */
+.breadcrumb {
+  font-size: 13px;
+  color: var(--text3);
+  margin-bottom: 1.5rem;
+}
+
+.breadcrumb a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover { text-decoration: underline; }
