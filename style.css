@@ -114,6 +114,14 @@ nav {
   font-weight: 300;
 }
 
+.page-affiliation {
+  font-size: 14px;
+  color: var(--text2);
+  margin-top: 0.5rem;
+  font-weight: 300;
+  line-height: 1.4;
+}
+
 /* ─── Section ─── */
 .section {
   margin-bottom: 2.5rem;
