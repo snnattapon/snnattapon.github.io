@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NS Notes — Nattapon Simanon</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* scoped styles for the notes listing */
+    .note-list { list-style: none; padding: 0; margin: 1.5rem 0; }
+    .note-list li {
+      margin: 0 0 1rem;
+      padding: 1.1rem 1.25rem;
+      background: #fff;
+      border: 1px solid #e0ddd6;
+      border-radius: 8px;
+      transition: box-shadow .15s ease, transform .15s ease;
+    }
+    .note-list li:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,.06);
+      transform: translateY(-1px);
+    }
+    .note-list a { text-decoration: none; color: inherit; display: block; }
+    .note-list .note-title { font-size: 17px; font-weight: 600; color: #1a5c3a; margin-bottom: .25rem; }
+    .note-list .note-desc { font-size: 14px; color: #666; line-height: 1.6; }
+    .note-soon {
+      opacity: .55;
+      pointer-events: none;
+    }
+    .note-soon .note-badge {
+      font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+      background: #e0ddd6; color: #555; padding: .1rem .5rem; border-radius: 4px; margin-left: .5rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="cv.html">CV</a></li>
+      <li><a href="publications.html">Publications</a></li>
+      <li><a href="ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="site-wrap">
+
+  <div class="page-header" style="margin-top:1.5rem;">
+    <p class="page-tag">NS Notes</p>
+    <h1 class="page-title">NS Notes</h1>
+    <p class="page-subtitle">บันทึกและ hands-on เกี่ยวกับ Mass Spectrometry, Proteomics และ Metabolomics</p>
+  </div>
+
+  <div class="prose">
+    <p>รวมบทความและโน้ตเชิงเทคนิค คลิกที่หัวข้อเพื่ออ่านรายละเอียด</p>
+
+    <ul class="note-list">
+      <li>
+        <a href="ns_note/metabolomics-workflow.html">
+          <div class="note-title">Bioinformatics Analysis for Metabolomics</div>
+          <div class="note-desc">
+            แนวทางวิเคราะห์ข้อมูล metabolomics ด้วย MetaboAnalyst 6.0 ตั้งแต่ ID conversion,
+            enrichment, pathway ไปจนถึง network analysis
+          </div>
+        </a>
+      </li>
+
+      <!-- ตัวอย่างหน้าที่จะเพิ่มในอนาคต: ก๊อปบล็อกด้านบนแล้วแก้ลิงก์กับข้อความ -->
+      <li class="note-soon">
+        <a href="ns_note/hplc.html">
+          <div class="note-title">What is HPLC? <span class="note-badge">draft</span></div>
+          <div class="note-desc">พื้นฐาน High-Performance Liquid Chromatography และการใช้คู่กับ MS</div>
+        </a>
+      </li>
+
+      <li class="note-soon">
+        <a href="ns_note/proteomics-ms.html">
+          <div class="note-title">Proteomics MS <span class="note-badge">draft</span></div>
+          <div class="note-desc">โน้ตเกี่ยวกับ mass spectrometry สำหรับงาน proteomics</div>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div style="margin-top:2rem;">
+    <a href="../index.html" style="font-size:14px; color:#1a5c3a; text-decoration:none;">← Back to Home</a>
+  </div>  
+
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+</body>
+</html>

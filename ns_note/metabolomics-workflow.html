@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bioinformatics Analysis for Metabolomics — Nattapon Simanon</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    /* --- scoped styles for this walkthrough (won't clash with style.css) --- */
+    .wf-download {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      margin: .5rem 0 2rem;
+      padding: .6rem 1.1rem;
+      background: #1a5c3a;
+      color: #fff;
+      font-size: 14px;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: background .15s ease;
+    }
+    .wf-download:hover { background: #124a2e; }
+    .wf-download .wf-dl-sub { opacity: .8; font-size: 12px; font-weight: normal; }
+
+    .wf-step {
+      margin: 2.5rem 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e0ddd6;
+    }
+    .wf-step:first-of-type { border-top: none; padding-top: 0; }
+
+    .wf-step-num {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #1a5c3a;
+      font-weight: 600;
+      margin-bottom: .3rem;
+    }
+
+    .wf-figure { margin: 1rem 0 .5rem; }
+    .wf-figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid #e0ddd6;
+      border-radius: 6px;
+    }
+    .wf-caption {
+      font-size: 13.5px;
+      color: #555;
+      margin-top: .6rem;
+      line-height: 1.6;
+    }
+
+    .wf-note {
+      background: #f6f4ee;
+      border-left: 3px solid #1a5c3a;
+      padding: .8rem 1rem;
+      margin: 1rem 0;
+      font-size: 14px;
+      line-height: 1.65;
+      border-radius: 0 4px 4px 0;
+    }
+    .wf-note strong { color: #1a5c3a; }
+
+    .wf-toc {
+      background: #f6f4ee;
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0 2rem;
+      font-size: 14px;
+    }
+    .wf-toc p { margin: 0 0 .5rem; font-weight: 600; color: #333; }
+    .wf-toc ol { margin: 0; padding-left: 1.4rem; line-height: 1.9; }
+    .wf-toc a { color: #1a5c3a; text-decoration: none; }
+    .wf-toc a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../cv.html">CV</a></li>
+      <li><a href="../publications.html">Publications</a></li>
+      <li><a href="../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="site-wrap">
+
+  <p class="breadcrumb" style="margin-top:1.5rem;">
+    <a href="../ns_index.html">NS Notes</a> / Bioinformatics Analysis for Metabolomics
+  </p>
+
+  <div class="page-header">
+    <p class="page-tag">NS Notes · Hands-on</p>
+    <h1 class="page-title">Bioinformatics Analysis for Metabolomics</h1>
+    <p class="page-subtitle">แนวทางวิเคราะห์ข้อมูล metabolomics ด้วย MetaboAnalyst 6.0 · เขียนโดย Nattapon Simanon</p>
+  </div>
+
+  <div class="prose">
+
+    <p>
+      บทความนี้สรุปขั้นตอนการวิเคราะห์ข้อมูล metabolomics เชิง bioinformatics ตั้งแต่การแปลง
+      identifier ของสารประกอบ ไปจนถึง enrichment, pathway และ network analysis โดยใช้
+      <a href="https://www.metaboanalyst.ca" target="_blank" rel="noopener">MetaboAnalyst 6.0</a>
+      เป็นเครื่องมือหลัก เหมาะสำหรับผู้ที่มีรายการ metabolite อยู่แล้วและต้องการต่อยอดไปสู่การตีความเชิงชีววิทยา
+    </p>
+
+    <a class="wf-download" href="assets/metabolomics/metabolomics-workflow-slides.pdf" download>
+      ⬇ ดาวน์โหลดสไลด์ฉบับเต็ม (PDF)
+      <span class="wf-dl-sub">44 หน้า</span>
+    </a>
+
+    <div class="wf-toc">
+      <p>ในบทความนี้</p>
+      <ol>
+        <li><a href="#data">Metabolomics data คืออะไร</a></li>
+        <li><a href="#idconv">Metabolite ID conversion</a></li>
+        <li><a href="#enrichment">Enrichment analysis</a></li>
+        <li><a href="#pathway">Pathway analysis</a></li>
+        <li><a href="#network">Network analysis (optional)</a></li>
+        <li><a href="#stitch">Compound interaction ด้วย STITCH (optional)</a></li>
+      </ol>
+    </div>
+
+    <!-- ============ 1. DATA ============ -->
+    <h2 id="data">1. Metabolomics data</h2>
+    <p>
+      ก่อนเริ่มวิเคราะห์ ควรเข้าใจก่อนว่าข้อมูล metabolomics ที่เรามีมาจากแพลตฟอร์มแบบไหน
+      (MS หรือ NMR), เป็นแบบ targeted หรือ untargeted, และเป็นการวิเคราะห์เชิงคุณภาพหรือปริมาณ
+      สิ่งเหล่านี้กำหนดว่าเราจะนำข้อมูลเข้าสู่ขั้นตอนถัดไปได้อย่างไร
+    </p>
+
+    <div class="wf-step">
+      <div class="wf-figure">
+        <img src="assets/metabolomics/01-metabolomics-data.png"
+             alt="ภาพรวมประเภทข้อมูล metabolomics" loading="lazy" />
+      </div>
+      <p class="wf-caption">
+        ประเด็นสำคัญของข้อมูล metabolomics: แพลตฟอร์มการวิเคราะห์ (MS vs NMR),
+        targeted vs untargeted และซอฟต์แวร์ที่เกี่ยวข้อง
+      </p>
+    </div>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/02-modules-overview.png"
+           alt="ภาพรวมโมดูลของ MetaboAnalyst 6.0" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      MetaboAnalyst 6.0 มีโมดูลวิเคราะห์หลากหลาย จัดกลุ่มตามชนิดข้อมูลนำเข้า
+      โดยในบทความนี้เราจะโฟกัสที่กลุ่ม <em>Annotated Features</em> — Enrichment, Pathway และ Network Analysis
+    </p>
+
+    <!-- ============ 2. ID CONVERSION ============ -->
+    <h2 id="idconv">2. Metabolite ID conversion</h2>
+    <p>
+      ก่อนทำ enrichment หรือ pathway analysis จำเป็นต้อง "standardize" ชื่อสารประกอบให้อยู่ในรูป
+      identifier มาตรฐาน (เช่น KEGG, HMDB, PubChem) เพื่อให้จับคู่กับฐานข้อมูลได้ถูกต้อง
+    </p>
+
+    <div class="wf-step">
+      <div class="wf-figure">
+        <img src="assets/metabolomics/03-id-conversion-upload.png"
+             alt="หน้าอัปโหลด compound ID ในโมดูล ID conversion" loading="lazy" />
+      </div>
+      <p class="wf-caption">
+        ใส่รายชื่อสารประกอบ (หนึ่งชื่อต่อบรรทัด) เลือก input type ให้ตรง แล้วกด Submit
+      </p>
+    </div>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/04-id-conversion-result.png"
+           alt="ผลลัพธ์การแปลง ID เป็น HMDB, KEGG, PubChem, ChEBI" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      ผลลัพธ์จะจับคู่ชื่อสารกับ identifier ในหลายฐานข้อมูล แถวที่ถูกไฮไลต์คือรายการที่ไม่พบ
+      exact match ต้องกด View เพื่อเลือกด้วยตนเอง
+    </p>
+
+    <div class="wf-note">
+      <strong>ข้อควรระวัง:</strong> หากใส่สารประกอบจำนวนมากพร้อมกันอาจได้ผลเป็น
+      "No records found" แนะนำให้ทยอยส่งครั้งละ 10–20 ชื่อ และตัวอักษรกรีก (เช่น α, β)
+      ควรพิมพ์เป็นภาษาอังกฤษ (alpha, beta) เพื่อให้ระบบจับคู่ได้แม่นยำ
+    </div>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/05-checkpoint1.png"
+           alt="Checkpoint I — พร้อมสำหรับ functional context" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      <strong>Checkpoint I:</strong> ตอนนี้เรามีรายการ metabolite ที่แปลงเป็น identifier
+      มาตรฐาน (เช่น KEGG ID) พร้อมสำหรับการวิเคราะห์เชิงหน้าที่ในขั้นต่อไป
+    </p>
+
+    <!-- ============ 3. ENRICHMENT ============ -->
+    <h2 id="enrichment">3. Enrichment analysis</h2>
+    <p>
+      Enrichment analysis ช่วยระบุว่ากลุ่มของ metabolite ในข้อมูลของเรามีความสัมพันธ์กับ
+      metabolite set ใดอย่างมีนัยสำคัญ (เช่น pathway, chemical class หรือ disease signature)
+    </p>
+
+    <div class="wf-step">
+      <div class="wf-figure">
+        <img src="assets/metabolomics/06-enrichment-upload.png"
+             alt="อัปโหลด metabolite IDs สำหรับ enrichment analysis" loading="lazy" />
+      </div>
+      <p class="wf-caption">
+        ใส่รายการ compound แบบคอลัมน์เดียว เลือก input type (เช่น KEGG ID) แล้ว Submit
+      </p>
+    </div>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/07-enrichment-params.png"
+           alt="การตั้งค่าพารามิเตอร์ enrichment analysis" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      เลือก metabolite set library ให้เหมาะกับคำถามวิจัย — pathway-based, disease signature
+      หรือ chemical structures และกำหนด reference metabolome หากต้องการ
+    </p>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/08-enrichment-result-bar.png"
+           alt="ผลลัพธ์ enrichment แบบ bar chart" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      ผลลัพธ์แสดงเป็น bar chart ของ enrichment ratio โดยแท่งสีเข้มคือ metabolite set
+      ที่ enrich มากที่สุด สามารถ export เป็นภาพความละเอียดสูงได้จาก Graphics Center
+    </p>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/09-enrichment-result-pie.png"
+           alt="ผลลัพธ์ enrichment แบบ pie chart และตารางค่า p-value" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      อีกมุมมองหนึ่งเป็น pie chart พร้อมตารางสรุปค่า p-value, Holm P และ FDR
+      ของแต่ละ metabolite set
+    </p>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/10-checkpoint2.png"
+           alt="Checkpoint II — biased chemical classes บ่งบอกอะไร" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      <strong>Checkpoint II:</strong> เมื่อ chemical class บางกลุ่มถูก enrich อย่างมีนัยสำคัญ
+      ให้ตั้งคำถามว่าสิ่งนี้สื่อความหมายเชิงชีววิทยาอย่างไร
+    </p>
+
+    <!-- ============ 4. PATHWAY ============ -->
+    <h2 id="pathway">4. Pathway analysis</h2>
+    <p>
+      Pathway analysis ผสาน enrichment analysis เข้ากับ pathway topology เพื่อประเมินทั้ง
+      นัยสำคัญและ "impact" ของ metabolite ต่อ pathway นั้น ๆ
+    </p>
+
+    <div class="wf-step">
+      <div class="wf-figure">
+        <img src="assets/metabolomics/11-pathway-upload.png"
+             alt="อัปโหลด metabolite IDs สำหรับ pathway analysis" loading="lazy" />
+      </div>
+      <p class="wf-caption">
+        ใส่ compound list แล้วเลือกสิ่งมีชีวิตอ้างอิง (organism) ให้ตรงกับตัวอย่างของเรา
+      </p>
+    </div>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/12-pathway-result.png"
+           alt="ผลลัพธ์ pathway analysis — bubble plot และ pathway view" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      (ซ้าย) bubble plot ของ pathway impact เทียบกับ −log(p) — ยิ่งอยู่ขวาบนและวงใหญ่
+      ยิ่งสำคัญ (ขวา) มุมมอง pathway ที่แสดงตำแหน่งของ compound ในเส้นทางเมแทบอลิซึม
+    </p>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/13-checkpoint3.png"
+           alt="Checkpoint III — topology ไม่เท่ากับ significance" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      <strong>Checkpoint III:</strong> ค่า topology (impact) กับ significance (p-value)
+      เป็นคนละมิติกัน pathway ที่ impact สูงอาจไม่ได้มีนัยสำคัญทางสถิติเสมอไป — ต้องตีความควบคู่กัน
+    </p>
+
+    <!-- ============ 5. NETWORK ============ -->
+    <h2 id="network">5. Network analysis <span style="font-weight:normal;font-size:.8em;color:#888;">(optional)</span></h2>
+    <p>
+      Network analysis สร้างเครือข่ายความสัมพันธ์ระหว่าง metabolite กับ gene หรือ metabolite
+      อื่น ๆ เพื่อสำรวจความเชื่อมโยงเชิงหน้าที่ในภาพที่กว้างขึ้น
+    </p>
+
+    <div class="wf-step">
+      <div class="wf-figure">
+        <img src="assets/metabolomics/14-network-upload.png"
+             alt="อัปโหลด metabolite (และ gene) สำหรับ network analysis" loading="lazy" />
+      </div>
+      <p class="wf-caption">
+        อัปโหลดรายการ compound (และรายการ gene หากมี) พร้อม fold change เพื่อสร้างเครือข่าย
+      </p>
+    </div>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/15-network-result.png"
+           alt="ผลลัพธ์ network analysis แสดงเครือข่าย metabolite-gene" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      เครือข่ายที่ได้แสดง node ของ metabolite (เช่น histamine, guanine) เชื่อมกับ gene
+      ที่เกี่ยวข้อง สามารถปรับ layout, กรองด้วย degree/betweenness และ export เป็น SIF ไปใช้ต่อใน Cytoscape ได้
+    </p>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/16-checkpoint4.png"
+           alt="Checkpoint IV — ทุกอย่างเชื่อมโยงกัน" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      <strong>Checkpoint IV:</strong> เครือข่ายช่วยให้เห็นว่า compound แต่ละตัวทำงานร่วมกัน
+      อย่างไร แต่ต้องระวังการตีความ "ทุกอย่างเชื่อมโยงกัน" ให้กลับไปถามเสมอว่ามันหมายความว่าอะไรเชิงชีววิทยา
+    </p>
+
+    <!-- ============ 6. STITCH ============ -->
+    <h2 id="stitch">6. Compound interaction ด้วย STITCH <span style="font-weight:normal;font-size:.8em;color:#888;">(optional)</span></h2>
+    <p>
+      STITCH เป็นฐานข้อมูล chemical–protein interaction ที่ช่วยเสริมข้อมูลว่าสารประกอบของเรา
+      มีปฏิสัมพันธ์กับโปรตีนหรือสารอื่นอย่างไร
+    </p>
+
+    <div class="wf-note">
+      <strong>หมายเหตุ:</strong> STITCH เวอร์ชันเว็บ (stitch-db.org) เป็นเวอร์ชันปี 2015
+      และไม่ได้รับการดูแลต่อแล้ว (unsupported) ใช้เพื่อการสำรวจเบื้องต้นได้แต่ควรตรวจสอบข้อมูลกับแหล่งที่ทันสมัยกว่า
+    </div>
+
+    <div class="wf-step">
+      <div class="wf-figure">
+        <img src="assets/metabolomics/17-stitch-search.png"
+             alt="ค้นหาสารประกอบหลายตัวใน STITCH" loading="lazy" />
+      </div>
+      <p class="wf-caption">
+        วางรายชื่อสารประกอบ (multiple names) แล้วให้ระบบ auto-detect organism ก่อนค้นหา
+      </p>
+    </div>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/18-stitch-result.png"
+           alt="ผลลัพธ์เครือข่าย chemical-protein จาก STITCH" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      ผลลัพธ์เป็นเครือข่าย confidence view — เส้นหนาแสดงความสัมพันธ์ที่แข็งแรงกว่า
+      สีเขียวคือ chemical–protein, สีแดงคือ chemical–chemical และสีเทาคือ protein–protein
+    </p>
+
+    <div class="wf-figure">
+      <img src="assets/metabolomics/19-checkpoint5.png"
+           alt="Checkpoint V — ความสัมพันธ์ระหว่าง compound กับโมเลกุลอื่น" loading="lazy" />
+    </div>
+    <p class="wf-caption">
+      <strong>Checkpoint V:</strong> ความสัมพันธ์ระหว่าง compound กับโมเลกุลอื่น ๆ
+      ช่วยเพิ่มมิติข้อมูลเชิงชีววิทยา — เป็นก้าวสุดท้ายที่เชื่อมผลการวิเคราะห์กลับสู่การตีความ
+    </p>
+
+    <h2>สรุป</h2>
+    <p>
+      workflow ตั้งแต่ ID conversion → enrichment → pathway → network → STITCH
+      ช่วยพาเราจากรายการ metabolite ดิบ ไปสู่การตีความเชิงชีววิทยาอย่างเป็นระบบ
+      โดยแต่ละ checkpoint คือจุดที่ควรหยุดถามว่า "ผลลัพธ์นี้หมายความว่าอะไร"
+      ก่อนเดินหน้าต่อ หากต้องการรายละเอียดครบทุกหน้า สามารถดาวน์โหลดสไลด์ฉบับเต็มด้านล่างได้
+    </p>
+
+    <a class="wf-download" href="assets/metabolomics/metabolomics-workflow-slides.pdf" download>
+      ⬇ ดาวน์โหลดสไลด์ฉบับเต็ม (PDF)
+      <span class="wf-dl-sub">44 หน้า</span>
+    </a>
+
+  </div>
+
+  <div style="margin-top:3rem; padding-top:1.5rem; border-top:1px solid #e0ddd6;">
+    <a href="../ns_index.html" style="font-size:14px; color:#1a5c3a; text-decoration:none;">← กลับไป NS Notes</a>
+  </div>
+
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+</body>
+</html>
