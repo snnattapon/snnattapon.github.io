@@ -8,13 +8,20 @@
   <style>
     /* ===== scoped styles for the lab-safety walkthrough ===== */
     .wf-download{
-      display:inline-flex; align-items:center; gap:.6rem;
-      background:#b91c1c; color:#fff; text-decoration:none;
-      padding:.7rem 1.2rem; border-radius:8px; font-weight:600;
-      margin:.5rem 0 1.5rem; transition:background .15s;
+      display:inline-flex; 
+      align-items:center; 
+      gap:.5rem;
+      margin: .5rem 0 2rem;
+      padding:.6rem 1.1rem; 
+      background:#b91c1c; 
+      color:#fff; 
+      font-size: 14px;
+      text-decoration:none;
+      border-radius:6px; 
+      transition:background .15s ease;
     }
     .wf-download:hover{ background:#991b1b; }
-    .wf-dl-sub{ font-weight:400; opacity:.85; font-size:.85em; }
+    .wf-download .wf-dl-sub { opacity: .8; font-size: 12px; font-weight: normal; }
 
     .wf-toc{
       background:#f8f7f4; border:1px solid #e6e3dc; border-radius:10px;
@@ -87,7 +94,7 @@
   <div class="page-header">
     <p class="page-tag">Teaching · Lab Safety</p>
     <h1 class="page-title">Laboratory Safety</h1>
-    <p class="page-subtitle">ทำไมความปลอดภัยในห้องปฏิบัติการจึงสำคัญ · จากบทเรียนจริงสู่การประเมินความเสี่ยงด้วย HIRA · เรียบเรียงโดย Nattapon Simanon</p>
+    <p class="page-subtitle">ทำไมความปลอดภัยในห้องปฏิบัติการจึงสำคัญ · จากบทเรียนจริงสู่การประเมินความเสี่ยงด้วย HIRA · โดย Nattapon Simanon</p>
   </div>
 
   <div class="prose">
@@ -95,7 +102,7 @@
     <p>
       บทความนี้สรุปเนื้อหาการบรรยายเรื่องความปลอดภัยในห้องปฏิบัติการ ตั้งแต่เหตุผลว่าทำไมเรื่องนี้จึงสำคัญ
       ผ่านกรณีศึกษาจริงที่จบด้วยการสูญเสีย ไปจนถึงการจำแนกประเภทอันตราย กรอบกฎหมาย
-      และการประเมินความเสี่ยงอย่างเป็นระบบด้วย HIRA พร้อม workshop วิเคราะห์เคสจริง 3 กรณีในห้องแล็บ
+      และการประเมินความเสี่ยงอย่างเป็นระบบด้วย HIRA พร้อม workshop วิเคราะห์ 3 กรณีตัวอย่างในห้องปฏิบัติการ
     </p>
 
     <a class="wf-download" href="assets/labsafety/lab-safety-slides.pdf" download>
@@ -104,14 +111,14 @@
     </a>
 
     <div class="wf-toc">
-      <p>ในบทความนี้</p>
+      <p>Highlighted Sections</p>
       <ol>
         <li><a href="#why">ทำไมความปลอดภัยจึงสำคัญ</a></li>
-        <li><a href="#memorial">Memorial Wall — บทเรียนจากเรื่องจริง</a></li>
+        <li><a href="#memorial">Memorial Wall: บทเรียนจากเรื่องจริง</a></li>
         <li><a href="#hazards">ประเภทของอันตรายและการควบคุม</a></li>
         <li><a href="#law">กฎหมายและมาตรฐาน</a></li>
-        <li><a href="#hira">HIRA — การประเมินความเสี่ยง</a></li>
-        <li><a href="#workshop">Workshop — วิเคราะห์ 3 กรณีจริง</a></li>
+        <li><a href="#hira">HIRA: การประเมินความเสี่ยง</a></li>
+        <li><a href="#workshop">Workshop: วิเคราะห์ 3 กรณีจริง</a></li>
       </ol>
     </div>
 
@@ -130,7 +137,7 @@
     </p>
 
     <!-- ============ 2. MEMORIAL WALL ============ -->
-    <h2 id="memorial">2. Memorial Wall — บทเรียนจากเรื่องจริง</h2>
+    <h2 id="memorial">2. Memorial Wall: บทเรียนจากเรื่องจริง</h2>
 
     <p>
       กรณีเหล่านี้คือเรื่องจริงของนักวิทยาศาสตร์ที่ต้องแลกด้วยสุขภาพหรือชีวิต
@@ -140,19 +147,19 @@
     <div class="wf-gallery">
       <figure>
         <img src="assets/labsafety/02-wetterhahn.png" alt="Karen Wetterhahn case" />
-        <figcaption>Karen Wetterhahn — เสียชีวิตจากพิษปรอทอินทรีย์ (dimethylmercury) ที่ซึมผ่านถุงมือ latex</figcaption>
+        <figcaption>Karen Wetterhahn เสียชีวิตจากพิษปรอทอินทรีย์ (dimethylmercury) ที่ซึมผ่านถุงมือ latex</figcaption>
       </figure>
       <figure>
         <img src="assets/labsafety/03-sangji.png" alt="Sheharbano Sheri Sangji case" />
-        <figcaption>Sheharbano "Sheri" Sangji — บาดเจ็บสาหัสจาก tert-butyllithium ที่ติดไฟเมื่อสัมผัสอากาศ</figcaption>
+        <figcaption>Sheharbano "Sheri" Sangji บาดเจ็บสาหัสจาก tert-butyllithium ที่ติดไฟเมื่อสัมผัสอากาศ</figcaption>
       </figure>
       <figure>
         <img src="assets/labsafety/04-curie.png" alt="Marie Curie case" />
-        <figcaption>Marie Curie — ผลระยะยาวจากการสัมผัสรังสีต่อเนื่องโดยไม่มีการป้องกัน</figcaption>
+        <figcaption>Marie Curie ผลระยะยาวจากการสัมผัสรังสีต่อเนื่องโดยไม่มีการป้องกัน</figcaption>
       </figure>
       <figure>
         <img src="assets/labsafety/05-jaumain.png" alt="Émilie Jaumain case" />
-        <figcaption>Émilie Jaumain — ติดเชื้อ prion จากอุบัติเหตุเข็มทิ่มขณะทำงานกับ BSE</figcaption>
+        <figcaption>Émilie Jaumain ติดเชื้อ prion จากอุบัติเหตุเข็มทิ่มขณะทำงานกับ BSE</figcaption>
       </figure>
     </div>
 
@@ -178,7 +185,7 @@
 
     <figure class="wf-fig">
       <img src="assets/labsafety/06-hazard-types.png" alt="Six categories of laboratory hazards" />
-      <figcaption>หกหมวดหลักของอันตรายในห้องปฏิบัติการ</figcaption>
+      <figcaption>6 หมวดหลักของอันตรายในห้องปฏิบัติการ</figcaption>
     </figure>
 
     <p>
@@ -201,7 +208,7 @@
     </figure>
 
     <!-- ============ 5. HIRA ============ -->
-    <h2 id="hira">5. HIRA — การประเมินความเสี่ยง</h2>
+    <h2 id="hira">5. HIRA: การประเมินความเสี่ยง</h2>
 
     <p>
       <strong>HIRA (Hazard Identification and Risk Assessment)</strong>
@@ -210,8 +217,8 @@
     </p>
 
     <ul>
-      <li><strong>Likelihood</strong> — โอกาสที่จะเกิดอันตราย</li>
-      <li><strong>Severity</strong> — ความรุนแรงของผลที่ตามมา</li>
+      <li><strong>Likelihood</strong>: โอกาสที่จะเกิดอันตราย</li>
+      <li><strong>Severity</strong>: ความรุนแรงของผลที่ตามมา</li>
     </ul>
 
     <p>
@@ -233,10 +240,10 @@
     </div>
 
     <!-- ============ 6. WORKSHOP ============ -->
-    <h2 id="workshop">6. Workshop — วิเคราะห์ 3 กรณีจริง</h2>
+    <h2 id="workshop">6. Workshop: วิเคราะห์ 3 กรณีตัวอย่าง</h2>
 
     <p>
-      สาม workshop ต่อไปนี้ให้ลองประเมินความเสี่ยงจากงานจริงในห้องแล็บ
+      Workshop ต่อไปนี้ให้ลองประเมินความเสี่ยงจากงานจริงในห้องปฏิบัติการ 3 กรณี
       โดยพิจารณา hazard, likelihood, severity แล้วออกแบบ controls ตาม hierarchy
     </p>
 
@@ -247,15 +254,15 @@
         ภายใน BSL-2 lab ด้วยไมโครปิเปต 100–1000 µL ผู้ปฏิบัติ 1 คน ทำ 3–4 ชม./วัน
       </p>
       <p>
-        <strong>Hazard:</strong> ชีวภาพ — เชื้อโรค Risk group 2 · โอกาสรับสัมผัสจาก aerosol, splash, sharps,
+        <strong>Hazard:</strong> ชีวภาพ (เชื้อโรค Risk Group 2) · โอกาสรับสัมผัสจาก aerosol, splash, sharps,
         surface contamination
       </p>
       <div class="wf-ctrl">
         <p><strong>Controls:</strong></p>
         <ul>
           <li><strong>Elimination/Substitution:</strong> ใช้สายพันธุ์ attenuated/non-pathogenic เมื่อทำได้</li>
-          <li><strong>Engineering:</strong> BSC Class II (ไม่ใช่ chemical fume hood!), aerosol-resistant filter tip, ทิ้งของเหลวลง waste ที่มี disinfectant</li>
-          <li><strong>Administrative:</strong> SOP, biosafety training, ห้ามดูดด้วยปาก, decontaminate BSC ก่อน/หลังใช้</li>
+          <li><strong>Engineering:</strong> BSC Class II (ไม่ใช่ chemical fume hood), aerosol-resistant filter tip, ทิ้งของเหลวลง waste ที่มี disinfectant</li>
+          <li><strong>Administrative:</strong> SOP, biosafety training, ห้ามดูดตัวอย่างด้วยปาก, decontaminate BSC ก่อน/หลังใช้</li>
           <li><strong>PPE:</strong> ถุงมือ nitrile, lab coat กระดุมหน้า, safety glasses</li>
         </ul>
       </div>
@@ -268,13 +275,13 @@
         ใน fume hood ความถี่ 2–3 ครั้ง/สัปดาห์
       </p>
       <p>
-        <strong>Hazard:</strong> เคมี — กดประสาทส่วนกลาง + ทำลายเส้นประสาทตา (ตาบอด),
+        <strong>Hazard:</strong> เคมี: กดประสาทส่วนกลาง + ทำลายเส้นประสาทตา (ตาบอด),
         ติดไฟง่าย (flash point 11°C), ดูดซึมทางผิวหนัง
       </p>
 
       <figure class="wf-fig">
         <img src="assets/labsafety/09-sds-example.png" alt="Safety Data Sheet example" />
-        <figcaption>Safety Data Sheet (SDS) — แหล่งข้อมูลอันตรายและการจัดการสารเคมีที่ต้องอ่านก่อนทำงาน</figcaption>
+        <figcaption>Safety Data Sheet (SDS): แหล่งข้อมูลอันตรายและการจัดการสารเคมีที่ต้องอ่านก่อนทำงาน</figcaption>
       </figure>
 
       <div class="wf-ctrl">
@@ -284,7 +291,7 @@
           <li><strong>Substitution:</strong> บาง assay เปลี่ยนเป็น acetonitrile/water ได้ (พิษน้อยกว่าแต่แพงกว่า และยังต้องพิจารณาความเสี่ยงจาก HCN)</li>
           <li><strong>Engineering:</strong> fume hood ที่ certified, secondary containment, bonding &amp; grounding, แยก flammable cabinet</li>
           <li><strong>Administrative:</strong> SOP, no eating/drinking, buddy system, จำกัดปริมาณบนโต๊ะ</li>
-          <li><strong>PPE:</strong> ถุงมือ nitrile (latex ทะลุ — ดูกรณี Wetterhahn), safety glasses/goggles, lab coat 100% cotton</li>
+          <li><strong>PPE:</strong> ถุงมือ nitrile (latex ทะลุ, ดูกรณี Wetterhahn), safety glasses/goggles, lab coat 100% cotton</li>
         </ul>
       </div>
     </div>
@@ -303,9 +310,9 @@
         <p><strong>Controls:</strong></p>
         <ul>
           <li><strong>Elimination:</strong> ใช้ระบบ centralized gas + pipeline (ถังอยู่นอกอาคาร)</li>
-          <li><strong>Substitution:</strong> เปลี่ยน He เป็น H₂ generator (ไม่ต้องมีถัง — แต่เพิ่ม fire risk ต้องชั่งน้ำหนัก)</li>
+          <li><strong>Substitution:</strong> เปลี่ยน He เป็น H₂ generator (ไม่ต้องมีถัง แต่เพิ่ม fire risk ต้องชั่งน้ำหนัก)</li>
           <li><strong>Engineering:</strong> chain/strap ยึดถังถาวร, regulator ที่เหมาะกับก๊าซ, leak detector, O₂ monitor, exhaust ventilation, cart มี wheel lock</li>
-          <li><strong>Administrative:</strong> SOP ละเอียดทุกขั้น (close valve → vent → loosen regulator → …), buddy system, ตรวจ leak ด้วย soap solution ทุกครั้ง, checklist ก่อนเริ่ม</li>
+          <li><strong>Administrative:</strong> SOP ละเอียดทุกขั้น (close valve → vent → loosen regulator → … → end process), buddy system, ตรวจ leak ด้วย soap solution ทุกครั้ง, checklist ก่อนเริ่ม</li>
           <li><strong>PPE:</strong> steel-toe boots</li>
         </ul>
       </div>

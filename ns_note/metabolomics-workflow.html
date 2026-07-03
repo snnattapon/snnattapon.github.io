@@ -102,14 +102,14 @@
   <div class="page-header">
     <p class="page-tag">NS Notes · Hands-on</p>
     <h1 class="page-title">Bioinformatics Analysis for Metabolomics</h1>
-    <p class="page-subtitle">แนวทางวิเคราะห์ข้อมูล metabolomics ด้วย MetaboAnalyst 6.0 · เขียนโดย Nattapon Simanon</p>
+    <p class="page-subtitle">แนวทางวิเคราะห์ข้อมูล metabolomics ด้วย MetaboAnalyst 6.0 · โดย Nattapon Simanon</p>
   </div>
 
   <div class="prose">
 
     <p>
-      บทความนี้สรุปขั้นตอนการวิเคราะห์ข้อมูล metabolomics เชิง bioinformatics ตั้งแต่การแปลง
-      identifier ของสารประกอบ ไปจนถึง enrichment, pathway และ network analysis โดยใช้
+      บทความนี้สรุปขั้นตอนการวิเคราะห์ข้อมูล metabolomics เชิงชีวสารสนเทศศาสตร์ (bioinformatics) ตั้งแต่การแปลง
+      identifier ของสารเมตาบอไลต์ (metabolite) ไปจนถึง enrichment, pathway และ network analysis โดยใช้
       <a href="https://www.metaboanalyst.ca" target="_blank" rel="noopener">MetaboAnalyst 6.0</a>
       เป็นเครื่องมือหลัก เหมาะสำหรับผู้ที่มีรายการ metabolite อยู่แล้วและต้องการต่อยอดไปสู่การตีความเชิงชีววิทยา
     </p>
@@ -120,7 +120,7 @@
     </a>
 
     <div class="wf-toc">
-      <p>ในบทความนี้</p>
+      <p>Highlighted Sections</p>
       <ol>
         <li><a href="#data">Metabolomics data คืออะไร</a></li>
         <li><a href="#idconv">Metabolite ID conversion</a></li>
@@ -145,8 +145,8 @@
              alt="ภาพรวมประเภทข้อมูล metabolomics" loading="lazy" />
       </div>
       <p class="wf-caption">
-        ประเด็นสำคัญของข้อมูล metabolomics: แพลตฟอร์มการวิเคราะห์ (MS vs NMR),
-        targeted vs untargeted และซอฟต์แวร์ที่เกี่ยวข้อง
+        ประเด็นสำคัญของข้อมูล metabolomics: แพลตฟอร์มการวิเคราะห์ (MS หรือ NMR),
+        targeted หรือ untargeted และซอฟต์แวร์ที่เกี่ยวข้อง
       </p>
     </div>
 
@@ -156,13 +156,13 @@
     </div>
     <p class="wf-caption">
       MetaboAnalyst 6.0 มีโมดูลวิเคราะห์หลากหลาย จัดกลุ่มตามชนิดข้อมูลนำเข้า
-      โดยในบทความนี้เราจะโฟกัสที่กลุ่ม <em>Annotated Features</em> — Enrichment, Pathway และ Network Analysis
+      โดยในบทความนี้เราจะโฟกัสที่กลุ่ม <em>Annotated Features</em> ได้แก่ Enrichment, Pathway และ Network Analysis
     </p>
 
     <!-- ============ 2. ID CONVERSION ============ -->
     <h2 id="idconv">2. Metabolite ID conversion</h2>
     <p>
-      ก่อนทำ enrichment หรือ pathway analysis จำเป็นต้อง "standardize" ชื่อสารประกอบให้อยู่ในรูป
+      ก่อนทำ enrichment หรือ pathway analysis จำเป็นต้อง "แปลง หรือ convert" ชื่อสารเมตาบอไลต์ให้อยู่ในรูป
       identifier มาตรฐาน (เช่น KEGG, HMDB, PubChem) เพื่อให้จับคู่กับฐานข้อมูลได้ถูกต้อง
     </p>
 
@@ -172,7 +172,7 @@
              alt="หน้าอัปโหลด compound ID ในโมดูล ID conversion" loading="lazy" />
       </div>
       <p class="wf-caption">
-        ใส่รายชื่อสารประกอบ (หนึ่งชื่อต่อบรรทัด) เลือก input type ให้ตรง แล้วกด Submit
+        ใส่รายชื่อสารเมตาบอไลต์ (หนึ่งชื่อต่อบรรทัด) เลือก input type ให้ถูกต้อง แล้วกด Submit
       </p>
     </div>
 
@@ -182,11 +182,11 @@
     </div>
     <p class="wf-caption">
       ผลลัพธ์จะจับคู่ชื่อสารกับ identifier ในหลายฐานข้อมูล แถวที่ถูกไฮไลต์คือรายการที่ไม่พบ
-      exact match ต้องกด View เพื่อเลือกด้วยตนเอง
+      exact match ต้องกด View เพื่อเลือกด้วยตนเอง (ซึ่งอาจไม่มีข้อมูลในฐานข้อมูลได้)
     </p>
 
     <div class="wf-note">
-      <strong>ข้อควรระวัง:</strong> หากใส่สารประกอบจำนวนมากพร้อมกันอาจได้ผลเป็น
+      <strong>ข้อควรระวัง:</strong> หากใส่สารเมตาบอไลต์จำนวนมากพร้อมกันอาจได้ผลเป็น
       "No records found" แนะนำให้ทยอยส่งครั้งละ 10–20 ชื่อ และตัวอักษรกรีก (เช่น α, β)
       ควรพิมพ์เป็นภาษาอังกฤษ (alpha, beta) เพื่อให้ระบบจับคู่ได้แม่นยำ
     </div>
@@ -222,7 +222,7 @@
            alt="การตั้งค่าพารามิเตอร์ enrichment analysis" loading="lazy" />
     </div>
     <p class="wf-caption">
-      เลือก metabolite set library ให้เหมาะกับคำถามวิจัย — pathway-based, disease signature
+      เลือก metabolite set library ให้เหมาะกับความต้องการ เช่น pathway-based, disease signature
       หรือ chemical structures และกำหนด reference metabolome หากต้องการ
     </p>
 
@@ -266,7 +266,7 @@
              alt="อัปโหลด metabolite IDs สำหรับ pathway analysis" loading="lazy" />
       </div>
       <p class="wf-caption">
-        ใส่ compound list แล้วเลือกสิ่งมีชีวิตอ้างอิง (organism) ให้ตรงกับตัวอย่างของเรา
+        ใส่ compound list แล้วเลือกรูปแบบของ input type (เช่น KEGG ID)
       </p>
     </div>
 
@@ -276,7 +276,7 @@
     </div>
     <p class="wf-caption">
       (ซ้าย) bubble plot ของ pathway impact เทียบกับ −log(p) — ยิ่งอยู่ขวาบนและวงใหญ่
-      ยิ่งสำคัญ (ขวา) มุมมอง pathway ที่แสดงตำแหน่งของ compound ในเส้นทางเมแทบอลิซึม
+      ยิ่งสำคัญ (ขวา) มุมมอง pathway ที่แสดงตำแหน่งของ compound ใน pathway diagram
     </p>
 
     <div class="wf-figure">
@@ -285,7 +285,7 @@
     </div>
     <p class="wf-caption">
       <strong>Checkpoint III:</strong> ค่า topology (impact) กับ significance (p-value)
-      เป็นคนละมิติกัน pathway ที่ impact สูงอาจไม่ได้มีนัยสำคัญทางสถิติเสมอไป — ต้องตีความควบคู่กัน
+      เป็นคนละมิติกัน pathway ที่ impact สูงอาจไม่ได้มีนัยสำคัญทางสถิติเสมอไป อาจต้องตีความควบคู่กัน
     </p>
 
     <!-- ============ 5. NETWORK ============ -->
@@ -301,7 +301,7 @@
              alt="อัปโหลด metabolite (และ gene) สำหรับ network analysis" loading="lazy" />
       </div>
       <p class="wf-caption">
-        อัปโหลดรายการ compound (และรายการ gene หากมี) พร้อม fold change เพื่อสร้างเครือข่าย
+        อัปโหลดรายการ compound (และรายการ gene หากมี) เพื่อสร้างเครือข่าย
       </p>
     </div>
 
@@ -350,7 +350,7 @@
            alt="ผลลัพธ์เครือข่าย chemical-protein จาก STITCH" loading="lazy" />
     </div>
     <p class="wf-caption">
-      ผลลัพธ์เป็นเครือข่าย confidence view — เส้นหนาแสดงความสัมพันธ์ที่แข็งแรงกว่า
+      ผลลัพธ์เป็นเครือข่าย confidence view : เส้นหนาแสดงความสัมพันธ์ที่แข็งแรงกว่า
       สีเขียวคือ chemical–protein, สีแดงคือ chemical–chemical และสีเทาคือ protein–protein
     </p>
 
@@ -360,7 +360,7 @@
     </div>
     <p class="wf-caption">
       <strong>Checkpoint V:</strong> ความสัมพันธ์ระหว่าง compound กับโมเลกุลอื่น ๆ
-      ช่วยเพิ่มมิติข้อมูลเชิงชีววิทยา — เป็นก้าวสุดท้ายที่เชื่อมผลการวิเคราะห์กลับสู่การตีความ
+      ช่วยเพิ่มมิติข้อมูลเชิงชีววิทยา : เป็นก้าวสุดท้ายที่เชื่อมผลการวิเคราะห์กลับสู่การตีความ
     </p>
 
     <h2>สรุป</h2>
@@ -368,13 +368,8 @@
       workflow ตั้งแต่ ID conversion → enrichment → pathway → network → STITCH
       ช่วยพาเราจากรายการ metabolite ดิบ ไปสู่การตีความเชิงชีววิทยาอย่างเป็นระบบ
       โดยแต่ละ checkpoint คือจุดที่ควรหยุดถามว่า "ผลลัพธ์นี้หมายความว่าอะไร"
-      ก่อนเดินหน้าต่อ หากต้องการรายละเอียดครบทุกหน้า สามารถดาวน์โหลดสไลด์ฉบับเต็มด้านล่างได้
+      ก่อนเดินหน้าต่อ หากต้องการรายละเอียดครบทุกหน้า สามารถดาวน์โหลดสไลด์ฉบับเต็มที่ลิงก์ด้านบน
     </p>
-
-    <a class="wf-download" href="assets/metabolomics/metabolomics-workflow-slides.pdf" download>
-      ⬇ ดาวน์โหลดสไลด์ฉบับเต็ม (PDF)
-      <span class="wf-dl-sub">44 หน้า</span>
-    </a>
 
   </div>
 
