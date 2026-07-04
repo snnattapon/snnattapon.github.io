@@ -69,6 +69,29 @@
     .wf-case h3{ margin-top:0; color:#292524; }
     .wf-case .wf-ctrl{ margin-top:.8rem; }
     .wf-case .wf-ctrl strong{ color:#b91c1c; }
+
+    .wf-answer{
+      border:1px solid #e6e3dc; border-radius:8px;
+      margin:1rem 0; overflow:hidden;
+    }
+    .wf-answer summary{
+      cursor:pointer; padding:.7rem 1.1rem;
+      background:#f8f7f4; font-weight:600; color:#b91c1c;
+      list-style:none; user-select:none;
+      transition:background .15s;
+    }
+    .wf-answer summary:hover{ background:#f1efe9; }
+    .wf-answer summary::-webkit-details-marker{ display:none; } /* ซ่อนสามเหลี่ยม default บน Safari/Chrome */
+    .wf-answer[open] summary{
+      background:#fef2f2; border-bottom:1px solid #e6e3dc;
+    }
+    .wf-answer .wf-ctrl{ padding:.4rem 1.1rem 1rem; }
+    .wf-answer .hide-text{ display:none; }
+    .wf-answer[open] .show-text{ display:none; }
+    .wf-answer[open] .hide-text{ display:inline; }
+    .wf-answer-body{ padding:.7rem 1.1rem 1rem; }
+    .wf-answer-body > *:first-child{ margin-top:0; }
+    .wf-answer-body > *:last-child{ margin-bottom:0; }
   </style>
 </head>
 <body>
@@ -253,19 +276,34 @@
         <strong>สถานการณ์:</strong> ดูดตัวอย่างที่มีเชื้อ <em>E. coli</em> O157:H7 (EHEC) ในตู้ BSC Class II
         ภายใน BSL-2 lab ด้วยไมโครปิเปต 100–1000 µL ผู้ปฏิบัติ 1 คน ทำ 3–4 ชม./วัน
       </p>
-      <p>
-        <strong>Hazard:</strong> ชีวภาพ (เชื้อโรค Risk Group 2) · โอกาสรับสัมผัสจาก aerosol, splash, sharps,
-        surface contamination
-      </p>
-      <div class="wf-ctrl">
+      <p><strong>Hazard:</strong></p>
+      <details class="wf-answer">
+        <summary>
+          <span class="show-text">🔽 See the answer</span>
+          <span class="hide-text">🔼 Hide the answer</span>
+        </summary>
+        <div class="wf-answer-body">
+          <p>
+            ชีวภาพ (เชื้อโรค Risk Group 2) · โอกาสรับสัมผัสจาก aerosol, splash, sharps, surface contamination
+          </p>
+        </div>
+      </details>
+
         <p><strong>Controls:</strong></p>
-        <ul>
-          <li><strong>Elimination/Substitution:</strong> ใช้สายพันธุ์ attenuated/non-pathogenic เมื่อทำได้</li>
-          <li><strong>Engineering:</strong> BSC Class II (ไม่ใช่ chemical fume hood), aerosol-resistant filter tip, ทิ้งของเหลวลง waste ที่มี disinfectant</li>
-          <li><strong>Administrative:</strong> SOP, biosafety training, ห้ามดูดตัวอย่างด้วยปาก, decontaminate BSC ก่อน/หลังใช้</li>
-          <li><strong>PPE:</strong> ถุงมือ nitrile, lab coat กระดุมหน้า, safety glasses</li>
-        </ul>
-      </div>
+      <details class="wf-answer">
+        <summary>
+          <span class="show-text">🔽 See the answer</span>
+          <span class="hide-text">🔼 Hide the answer</span>
+        </summary>
+        <div class="wf-answer-body">
+          <ul>
+            <li><strong>Elimination/Substitution:</strong> ใช้สายพันธุ์ attenuated/non-pathogenic เมื่อทำได้</li>
+            <li><strong>Engineering:</strong> BSC Class II (ไม่ใช่ chemical fume hood), aerosol-resistant filter tip, ทิ้งของเหลวลง waste ที่มี disinfectant</li>
+            <li><strong>Administrative:</strong> SOP, biosafety training, ห้ามดูดตัวอย่างด้วยปาก, decontaminate BSC ก่อน/หลังใช้</li>
+            <li><strong>PPE:</strong> ถุงมือ nitrile, lab coat กระดุมหน้า, safety glasses</li>
+          </ul>
+        </div>
+      </details>
     </div>
 
     <div class="wf-case">
@@ -274,26 +312,40 @@
         <strong>สถานการณ์:</strong> เตรียม methanol 50% ปริมาณ 100 mL สำหรับ mobile phase ของ HPLC
         ใน fume hood ความถี่ 2–3 ครั้ง/สัปดาห์
       </p>
-      <p>
-        <strong>Hazard:</strong> เคมี: กดประสาทส่วนกลาง + ทำลายเส้นประสาทตา (ตาบอด),
-        ติดไฟง่าย (flash point 11°C), ดูดซึมทางผิวหนัง
-      </p>
+      <p><strong>Hazard:</strong></p>
+      <details class="wf-answer">
+        <summary>
+          <span class="show-text">🔽 See the answer</span>
+          <span class="hide-text">🔼 Hide the answer</span>
+        </summary>
+        <div class="wf-answer-body">
+          <p>
+          เคมี: กดประสาทส่วนกลาง + ทำลายเส้นประสาทตา (ตาบอด), ติดไฟง่าย (flash point 11°C), ดูดซึมทางผิวหนัง
+          </p>
+        </div>
+      </details>
 
       <figure class="wf-fig">
         <img src="assets/labsafety/09-sds-example.png" alt="Safety Data Sheet example" />
         <figcaption>Safety Data Sheet (SDS): แหล่งข้อมูลอันตรายและการจัดการสารเคมีที่ต้องอ่านก่อนทำงาน</figcaption>
       </figure>
 
-      <div class="wf-ctrl">
         <p><strong>Controls:</strong></p>
-        <ul>
-          <li><strong>Elimination:</strong> ใช้ pre-mixed mobile phase จาก supplier ถ้าทำได้</li>
-          <li><strong>Substitution:</strong> บาง assay เปลี่ยนเป็น acetonitrile/water ได้ (พิษน้อยกว่าแต่แพงกว่า และยังต้องพิจารณาความเสี่ยงจาก HCN)</li>
-          <li><strong>Engineering:</strong> fume hood ที่ certified, secondary containment, bonding &amp; grounding, แยก flammable cabinet</li>
-          <li><strong>Administrative:</strong> SOP, no eating/drinking, buddy system, จำกัดปริมาณบนโต๊ะ</li>
-          <li><strong>PPE:</strong> ถุงมือ nitrile (latex ทะลุ, ดูกรณี Wetterhahn), safety glasses/goggles, lab coat 100% cotton</li>
-        </ul>
-      </div>
+      <details class="wf-answer">
+        <summary>
+          <span class="show-text">🔽 See the answer</span>
+          <span class="hide-text">🔼 Hide the answer</span>
+        </summary>
+        <div class="wf-answer-body">
+          <ul>
+            <li><strong>Elimination:</strong> ใช้ pre-mixed mobile phase จาก supplier ถ้าทำได้</li>
+            <li><strong>Substitution:</strong> บาง assay เปลี่ยนเป็น acetonitrile/water ได้ (พิษน้อยกว่าแต่แพงกว่า และยังต้องพิจารณาความเสี่ยงจาก HCN)</li>
+            <li><strong>Engineering:</strong> fume hood ที่ certified, secondary containment, bonding &amp; grounding, แยก flammable cabinet</li>
+            <li><strong>Administrative:</strong> SOP, no eating/drinking, buddy system, จำกัดปริมาณบนโต๊ะ</li>
+            <li><strong>PPE:</strong> ถุงมือ nitrile (latex ทะลุ, ดูกรณี Wetterhahn), safety glasses/goggles, lab coat 100% cotton</li>
+          </ul>
+        </div>
+      </details>
     </div>
 
     <div class="wf-case">
@@ -302,12 +354,25 @@
         <strong>สถานการณ์:</strong> เปลี่ยนถัง He carrier gas สำหรับ GC-MS ขนาด 47L ที่ 2000 psi
         ในห้องเครื่องมือ ~30 m² มีระบายอากาศ ความถี่ 1 ครั้ง/เดือน ผู้ปฏิบัติ 1 คน
       </p>
-      <p>
-        <strong>Hazards:</strong> กายภาพ (ถังหนัก ~70 kg / valve หักแล้วถังพุ่งเหมือนจรวด),
-        ความดัน (2000 psi), ขาดออกซิเจน (He ดันออกซิเจนออกจากห้อง), เสียงดัง
-      </p>
-      <div class="wf-ctrl">
+      <p><strong>Hazards:</strong></p>
+      <details class="wf-answer">
+        <summary>
+          <span class="show-text">🔽 See the answer</span>
+          <span class="hide-text">🔼 Hide the answer</span>
+        </summary>
+        <div class="wf-answer-body">
+          <p>กายภาพ (ถังหนัก ~70 kg / valve หักแล้วถังพุ่งเหมือนจรวด), ความดัน (2000 psi), ขาดออกซิเจน (He ดันออกซิเจนออกจากห้อง), เสียงดัง</p>
+        </div>
+      </details>
+
         <p><strong>Controls:</strong></p>
+      <details class="wf-answer">
+        <summary>
+          <span class="show-text">🔽 See the answer</span>
+          <span class="hide-text">🔼 Hide the answer</span>
+        </summary>
+    
+        <div class="wf-answer-body">        
         <ul>
           <li><strong>Elimination:</strong> ใช้ระบบ centralized gas + pipeline (ถังอยู่นอกอาคาร)</li>
           <li><strong>Substitution:</strong> เปลี่ยน He เป็น H₂ generator (ไม่ต้องมีถัง แต่เพิ่ม fire risk ต้องชั่งน้ำหนัก)</li>
@@ -315,7 +380,8 @@
           <li><strong>Administrative:</strong> SOP ละเอียดทุกขั้น (close valve → vent → loosen regulator → … → end process), buddy system, ตรวจ leak ด้วย soap solution ทุกครั้ง, checklist ก่อนเริ่ม</li>
           <li><strong>PPE:</strong> steel-toe boots</li>
         </ul>
-      </div>
+        </div>
+      </details>
     </div>
 
     <div class="wf-note">
@@ -329,11 +395,11 @@
     <blockquote style="border-left:4px solid #b91c1c; padding-left:1.2rem; margin:2rem 0; color:#57534e; font-style:italic;">
       "Safety is not about protecting the laboratory. Safety is about making sure everyone goes home
       in the same condition they arrived."
-      <br /><span style="font-style:normal; font-size:.9em; color:#78716c;">— Anonymous</span>
+      <br /><p style="font-style:normal; font-size:.9em; text-align: right; color:#78716c;">— Anonymous</p>
     </blockquote>
 
   <div style="margin-top:3rem; padding-top:1.5rem; border-top:1px solid #e0ddd6;">
-    <a href="../ns_index.html" style="font-size:14px; color:#1a5c3a; text-decoration:none;">← กลับไป NS Notes</a>
+    <a href="../ns_index.html" style="font-size:14px; color:#1a5c3a; text-decoration:none;">← Back to NS Notes</a>
   </div>
 
   </div>
