@@ -5,6 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nattapon Simanon</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .journey {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .journey-step {
+      flex: 1;
+      min-width: 130px;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .journey-icon { line-height: 0; margin-bottom: 10px; }
+    .journey-icon svg { width: 24px; height: 24px; display: block; }
+    .journey-arrow svg { width: 18px; height: 18px; }
+    .journey-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+    .journey-desc { font-size: 13px; }
+    .journey-arrow {
+      display: flex;
+      align-items: center;
+      color: #b8b6ad;
+      font-size: 18px;
+    }
+    /* colours pulled from the timeline image */
+    .journey-med  { background: #f8f0dd; }
+    .journey-med  .journey-icon, .journey-med  .journey-title { color: #8a6410; }
+    .journey-med  .journey-desc  { color: #ac822a; }
+    .journey-ms   { background: #ecebf9; }
+    .journey-ms   .journey-icon, .journey-ms   .journey-title { color: #4a428f; }
+    .journey-ms   .journey-desc  { color: #6b62b6; }
+    .journey-data { background: #e6f2ea; }
+    .journey-data .journey-icon, .journey-data .journey-title { color: #145a3f; }
+    .journey-data .journey-desc  { color: #1f8a6b; }
+    .journey-ai   { background: #e4eef8; }
+    .journey-ai   .journey-icon, .journey-ai   .journey-title { color: #143d70; }
+    .journey-ai   .journey-desc  { color: #1b4e8c; }
+    .journey-more {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 14px;
+      color: #1b4e8c;
+      text-decoration: none;
+    }
+    .journey-more:hover { text-decoration: underline; }
+    @media (max-width: 560px) {
+      .journey-arrow { transform: rotate(90deg); width: 100%; justify-content: center; }
+      .journey-step { min-width: 100%; }
+    }
+  </style>
 </head>
 <body>
 
@@ -35,6 +85,58 @@
       <br>
       Currently, I am transitioning into applying AI/ML in medical and healthcare applications.
     </div>
+  </div>
+
+  <div class="section">
+    <p class="section-label">Research Journey</p>
+    <div class="journey">
+      <div class="journey-step journey-med">
+        <div class="journey-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 3v5a4 4 0 0 0 8 0V3"/><path d="M10 15a5 5 0 0 0 5 5 4 4 0 0 0 4-4v-2"/><circle cx="20" cy="10" r="2"/>
+          </svg>
+        </div>
+        <div class="journey-title">Medical roots</div>
+        <div class="journey-desc">Biomedical &amp; tropical medicine</div>
+      </div>
+      <div class="journey-arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+      </div>
+      <div class="journey-step journey-ms">
+        <div class="journey-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 13c2 0 2-6 4-6s2 12 4 12 2-9 4-9 2 3 4 3h2"/>
+          </svg>
+        </div>
+        <div class="journey-title">MS &amp; BIF</div>
+        <div class="journey-desc">Mass spectrometry &amp; bioinformatics</div>
+      </div>
+      <div class="journey-arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+      </div>
+      <div class="journey-step journey-data">
+        <div class="journey-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 8l-4 4 4 4"/><path d="M15 8l4 4-4 4"/>
+          </svg>
+        </div>
+        <div class="journey-title">Data science</div>
+        <div class="journey-desc">Python &amp; applied analytics</div>
+      </div>
+      <div class="journey-arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+      </div>
+      <div class="journey-step journey-ai">
+        <div class="journey-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 4a2.5 2.5 0 0 0-2.5 2.5A2.5 2.5 0 0 0 5 9v1a2.5 2.5 0 0 0 0 4v1a2.5 2.5 0 0 0 2 2.45A2.5 2.5 0 0 0 12 20V5.5A1.5 1.5 0 0 0 10.5 4z"/><path d="M15 4a2.5 2.5 0 0 1 2.5 2.5A2.5 2.5 0 0 1 19 9v1a2.5 2.5 0 0 1 0 4v1a2.5 2.5 0 0 1-2 2.45A2.5 2.5 0 0 1 12 20"/>
+          </svg>
+        </div>
+        <div class="journey-title">AI &amp; ML</div>
+        <div class="journey-desc">Precision medicine ahead</div>
+      </div>
+    </div>
+    <a href="cv.html" class="journey-more">See the full roadmap →</a>
   </div>
 
   <div class="section">
