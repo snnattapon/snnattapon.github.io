@@ -15,6 +15,10 @@
   --sans: 'Noto Sans Thai', sans-serif;
 }
 
+/* Reserve scrollbar space on all pages so centered content never shifts
+   between short pages (no scrollbar) and tall pages (scrollbar). */
+html { scrollbar-gutter: stable; }
+
 body {
   font-family: var(--sans);
   background: var(--bg);
