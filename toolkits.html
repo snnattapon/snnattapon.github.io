@@ -106,32 +106,28 @@
     .tk-link.ghost:hover { background: #eef3fa; }
     .tk-link svg { width: 15px; height: 15px; }
 
-    /* ---- Disabled / coming-soon buttons ----
-       Intentional "not yet available" state: muted, non-clickable,
-       with a "Soon" tag so it reads as planned, not broken.
-       To activate: change <span> to <a href="...">, remove .is-disabled,
-       and delete the inner <em class="tk-soon"> tag. */
-    .tk-link.is-disabled {
-      background: #f1f0ec;
-      color: #a8a59c;
-      border: 1px solid #e2e0d8;
-      cursor: not-allowed;
-      pointer-events: auto;   /* keep tooltip on hover */
+    /* ---- Multi-platform download buttons ---- */
+    .tk-dl { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+    .tk-dl-btn {
+      display: inline-flex; align-items: center; gap: 11px;
+      text-decoration: none; padding: 10px 15px; border-radius: 10px;
+      background: #143d70; color: #fff;
+      transition: background .15s ease, transform .15s ease;
     }
-    .tk-link.is-disabled:hover { background: #f1f0ec; }
-    .tk-link.is-disabled svg { opacity: .6; }
-    .tk-soon {
-      font-style: normal;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      background: #e2e0d8;
-      color: #7d7a72;
-      padding: 1px 6px;
-      border-radius: 5px;
-      margin-left: 2px;
-    }
+    .tk-dl-btn:hover { background: #10315a; transform: translateY(-1px); }
+    .tk-dl-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+    .tk-dl-btn .tk-dl-text { display: flex; flex-direction: column; line-height: 1.25; }
+    .tk-dl-btn .tk-dl-main { font-size: 13.5px; font-weight: 700; }
+    .tk-dl-btn .tk-dl-sub  { font-size: 11px; font-weight: 500; opacity: .78; }
+    .tk-dl-btn.mac { background: #f1f0ec; color: #26241d; border: 1px solid #ddd9cd; }
+    .tk-dl-btn.mac:hover { background: #e9e7df; }
+    .tk-dl-btn.mac .tk-dl-sub { opacity: .62; }
+    .tk-dl-help { font-size: 12px; color: #6b6860; line-height: 1.5; margin: 2px 0 10px; }
+    .tk-dl-help code { background: #efeee8; border-radius: 4px; padding: 1px 5px; font-size: 11.5px; }
+    .tk-dl-more { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; text-decoration: none; color: #143d70; }
+    .tk-dl-more:hover { text-decoration: underline; }
+    .tk-dl-more svg { width: 14px; height: 14px; }
+
   </style>
 </head>
 <body>
@@ -159,18 +155,10 @@
   <div class="section">
     <div class="tk-grid">
 
-      <!-- ============ Toolkit 1: KEGG converter ============
-           Has a Details page planned + GitHub + Download, all "coming soon".
-           TO ACTIVATE each button when ready:
-             1. change the <span class="tk-link ..."> to <a href="..." class="tk-link ...">
-             2. remove "is-disabled" from its class
-             3. delete the inner <em class="tk-soon">Soon</em>
-           For the GitHub link add: target="_blank" rel="noopener"
-      -->
       <div class="tk-card">
         <div class="tk-card-head">
-          <h2 class="tk-title">(Pre-release) Compound Name → KEGG ID Converter</h2>
-          <span class="tk-badge dev">In development</span>
+          <h2 class="tk-title">Compound Name → KEGG ID Converter</h2>
+          <span class="tk-badge stable">v0.1.3 · Released</span>
         </div>
         <p class="tk-desc">
           A utility to map chemical compound names to their corresponding KEGG identifiers,
@@ -183,26 +171,61 @@
           <span class="tk-tag">Metabolomics</span>
           <span class="tk-tag">Bioinformatics</span>
         </div>
-        <div class="tk-links">
-          <span class="tk-link primary is-disabled" role="link" aria-disabled="true" title="Repository will be published soon">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.8c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
-            View on GitHub <em class="tk-soon">Soon</em>
-          </span>
-          <span class="tk-link ghost is-disabled" role="link" aria-disabled="true" title="Detail page coming soon">
-            Details <em class="tk-soon">Soon</em>
-          </span>
-          <span class="tk-link ghost is-disabled" role="link" aria-disabled="true" title="Download will be available soon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
-            Download <em class="tk-soon">Soon</em>
-          </span>
+        <div class="tk-dl">
+
+          <!-- Windows -->
+          <a class="tk-dl-btn"
+             href="https://github.com/snnattapon/CompVertID/releases/download/v0.1.3/CompVertID-Windows.exe"
+             download>
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.1 10.4 4v7.4H3V5.1zm0 13.8 7.4 1v-7.3H3v6.3zM11.3 3.9 21 2.5v9H11.3V3.9zm0 16.2L21 21.5v-9h-9.7v7.6z"/></svg>
+            <span class="tk-dl-text">
+              <span class="tk-dl-main">Download for Windows</span>
+              <span class="tk-dl-sub">Windows 10/11 · 64-bit</span>
+            </span>
+          </a>
+
+          <!-- macOS · Apple Silicon -->
+          <a class="tk-dl-btn mac"
+             href="https://github.com/snnattapon/CompVertID/releases/download/v0.1.3/CompVertID-macOS-AppleSilicon"
+             download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="11" rx="1.5"/><path d="M2 19h20"/><path d="M9 19l.5-2h5l.5 2"/></svg>
+            <span class="tk-dl-text">
+              <span class="tk-dl-main">Download for macOS</span>
+              <span class="tk-dl-sub">Apple Silicon · M series</span>
+            </span>
+          </a>
+
+          <!-- macOS · Intel -->
+          <a class="tk-dl-btn mac"
+             href="https://github.com/snnattapon/CompVertID/releases/download/v0.1.3/CompVertID-macOS-Intel"
+             download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="11" rx="1.5"/><path d="M2 19h20"/><path d="M9 19l.5-2h5l.5 2"/></svg>
+            <span class="tk-dl-text">
+              <span class="tk-dl-main">Download for macOS</span>
+              <span class="tk-dl-sub">Intel · x86-64</span>
+            </span>
+          </a>
+
         </div>
+
+        <p class="tk-dl-help">
+          Note: How to determine your Mac's processor? On the Apple logo, click → <strong>About This Mac</strong> and look at the <code>Chip</code> 
+          <br>— If it says Apple M1/M2/M3/M4/..., choose <code>Apple Silicon</code>.
+          <br>— If it says Intel, choose <code>Intel</code>.
+        </p>
+
+        <a class="tk-dl-more"
+           href="https://github.com/snnattapon/CompVertID/releases/tag/v0.1.3"
+           target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.8c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+          All downloads &amp; source on GitHub
+        </a>
       </div>
 
       <!-- ============ Add future toolkits below ============
       Copy a .tk-card block above. Badge classes: dev | beta | stable
       Give a tool a Details button only when it has more to say than the card.
       =================================================== -->
-
 
     </div>
   </div>
