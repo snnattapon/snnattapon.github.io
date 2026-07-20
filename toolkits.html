@@ -128,6 +128,36 @@
     .tk-dl-more:hover { text-decoration: underline; }
     .tk-dl-more svg { width: 14px; height: 14px; }
 
+    /* ---- Temporarily disabled download buttons (bug fix in progress) ----
+       TO RE-ENABLE when the fix is out:
+         1. change each <span class="tk-dl-btn ... is-disabled" ...> back to
+            <a class="tk-dl-btn ..." href="(the URL in its data-href)" download>
+         2. remove "is-disabled" from the class and delete the data-href attribute
+         3. delete the inner <em class="tk-fixing">Fixing</em>
+         4. delete the <div class="tk-dl-notice"> block below the buttons
+         5. change the badge back to: <span class="tk-badge stable">v0.1.3 · Released</span>
+       Each button's original download URL is preserved in its data-href attribute. */
+    .tk-dl-btn.is-disabled {
+      background: #f1f0ec; color: #a8a59c; border: 1px solid #e2e0d8;
+      cursor: not-allowed; pointer-events: auto;
+    }
+    .tk-dl-btn.is-disabled:hover { background: #f1f0ec; transform: none; }
+    .tk-dl-btn.is-disabled svg { opacity: .5; }
+    .tk-dl-btn.is-disabled .tk-dl-sub { opacity: .7; }
+    .tk-fixing {
+      font-style: normal; font-size: 10px; font-weight: 700;
+      letter-spacing: .04em; text-transform: uppercase;
+      background: #f8e3d0; color: #9a5518;
+      padding: 1px 6px; border-radius: 5px; margin-left: 8px; align-self: center;
+    }
+    .tk-dl-notice {
+      display: flex; align-items: flex-start; gap: 9px;
+      font-size: 13px; line-height: 1.5; color: #8a4b12;
+      background: #fcf3e8; border: 1px solid #f0dcc4;
+      border-radius: 10px; padding: 11px 14px; margin: 4px 0 12px;
+    }
+    .tk-dl-notice svg { width: 17px; height: 17px; flex-shrink: 0; margin-top: 1px; }
+    .tk-dl-notice strong { font-weight: 700; }
   </style>
 </head>
 <body>
@@ -157,11 +187,11 @@
 
       <div class="tk-card">
         <div class="tk-card-head">
-          <h2 class="tk-title">Compound Name → KEGG ID Converter</h2>
-          <span class="tk-badge stable">v0.1.3 · Released</span>
+          <h2 class="tk-title">CompVertID</h2>
+          <span class="tk-badge dev">v0.1.5 · Fixing bug</span>
         </div>
         <p class="tk-desc">
-          A utility to map chemical compound names to their corresponding KEGG identifiers,
+          "<strong>Comp</strong>ound con<strong>Vert</strong> <strong>ID</strong>entifier — <strong>CompVertID</strong>" A utility to map chemical compound names to their corresponding KEGG identifiers,
           streamlining a common but tedious step in metabolomics annotation and pathway analysis.
           Handles name variants and batch conversion from a list of compounds.
         </p>
@@ -174,38 +204,47 @@
         <div class="tk-dl">
 
           <!-- Windows -->
-          <a class="tk-dl-btn"
-             href="https://github.com/snnattapon/CompVertID/releases/download/v0.1.3/CompVertID-Windows.exe"
-             download>
+          <span class="tk-dl-btn is-disabled" role="link" aria-disabled="true"
+             data-href="https://github.com/snnattapon/CompVertID/releases/download/v0.1.5/CompVertID-Windows.exe"
+             title="Temporarily unavailable — fixing a bug in v0.1.5">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.1 10.4 4v7.4H3V5.1zm0 13.8 7.4 1v-7.3H3v6.3zM11.3 3.9 21 2.5v9H11.3V3.9zm0 16.2L21 21.5v-9h-9.7v7.6z"/></svg>
             <span class="tk-dl-text">
               <span class="tk-dl-main">Download for Windows</span>
               <span class="tk-dl-sub">Windows 10/11 · 64-bit</span>
             </span>
-          </a>
+            <em class="tk-fixing">Fixing</em>
+          </span>
 
           <!-- macOS · Apple Silicon -->
-          <a class="tk-dl-btn mac"
-             href="https://github.com/snnattapon/CompVertID/releases/download/v0.1.3/CompVertID-macOS-AppleSilicon"
-             download>
+          <span class="tk-dl-btn mac is-disabled" role="link" aria-disabled="true"
+             data-href="https://github.com/snnattapon/CompVertID/releases/download/v0.1.5/CompVertID-macOS-AppleSilicon"
+             title="Temporarily unavailable — fixing a bug in v0.1.5">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="11" rx="1.5"/><path d="M2 19h20"/><path d="M9 19l.5-2h5l.5 2"/></svg>
             <span class="tk-dl-text">
               <span class="tk-dl-main">Download for macOS</span>
               <span class="tk-dl-sub">Apple Silicon · M series</span>
             </span>
-          </a>
+            <em class="tk-fixing">Fixing</em>
+          </span>
 
           <!-- macOS · Intel -->
-          <a class="tk-dl-btn mac"
-             href="https://github.com/snnattapon/CompVertID/releases/download/v0.1.3/CompVertID-macOS-Intel"
-             download>
+          <span class="tk-dl-btn mac is-disabled" role="link" aria-disabled="true"
+             data-href="https://github.com/snnattapon/CompVertID/releases/download/v0.1.5/CompVertID-macOS-Intel"
+             title="Temporarily unavailable — fixing a bug in v0.1.5">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="11" rx="1.5"/><path d="M2 19h20"/><path d="M9 19l.5-2h5l.5 2"/></svg>
             <span class="tk-dl-text">
               <span class="tk-dl-main">Download for macOS</span>
               <span class="tk-dl-sub">Intel · x86-64</span>
             </span>
-          </a>
+            <em class="tk-fixing">Fixing</em>
+          </span>
 
+        </div>
+
+        <!-- Temporary bug-fix notice. DELETE this whole block to remove it. -->
+        <div class="tk-dl-notice">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+          <span>Downloads are <strong>temporarily unavailable</strong>. We found a bug in v0.1.5 and are preparing a fixed build — please check back soon. Thanks for your patience.</span>
         </div>
 
         <p class="tk-dl-help">
@@ -215,7 +254,7 @@
         </p>
 
         <a class="tk-dl-more"
-           href="https://github.com/snnattapon/CompVertID/releases/tag/v0.1.3"
+           href="https://github.com/snnattapon/CompVertID/releases/tag/v0.1.5"
            target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.8c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
           All downloads &amp; source on GitHub
