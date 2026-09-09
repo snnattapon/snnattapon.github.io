@@ -57,7 +57,8 @@
         <button class="ms-btn" id="ft-replay" type="button">&#8635; Restart excitation</button>
         <span style="font-size:13px;color:var(--text3);">orbit &rarr; transient (beating) &rarr; Fourier transform &rarr; spectrum</span>
       </div>
-      <div class="ms-stage"><canvas id="ft-cv" style="height:400px;"></canvas></div>
+      <p class="ms-scroll-hint">↔ scroll sideways to see all three panels</p>
+      <div class="ms-stage ms-stage-wide"><canvas id="ft-cv" style="height:400px;"></canvas></div>
       <div class="ms-legend">
         <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; orbits fast &rarr; high frequency</span>
         <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; orbits slow &rarr; low frequency</span>
@@ -86,6 +87,7 @@
   <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
 </footer>
 
+<script src="canvas-util.js"></script>
 <script src="nav.js"></script>
 <script>renderMsNav('ft-icr');</script>
 
@@ -109,9 +111,9 @@
   }
   function drawCell(p){
     const cx=p.x+p.w*0.52, cy=H*0.44, ax=p.w*0.28, ay=H*0.19;
-    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('ions orbiting in magnetic field', p.x+p.w/2, 24);
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center'; MSUtil.fitText(ctx,'ions orbiting in magnetic field',p.w*0.92,12,8); ctx.fillText('ions orbiting in magnetic field', p.x+p.w/2, 24);
     ctx.strokeStyle=MUTED; ctx.lineWidth=1.5; ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(cx,cy+ay*1.9); ctx.lineTo(cx,cy-ay*1.9); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.fillText('B', cx+12, cy-ay*1.75);
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.fillText('B', cx+12, cy-ay*1.75);
     ctx.strokeStyle=LINE; ctx.lineWidth=3;
     ctx.beginPath(); ctx.moveTo(cx-ax*1.35,cy-ay*1.2); ctx.lineTo(cx+ax*1.35,cy-ay*1.2); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(cx-ax*1.35,cy+ay*1.2); ctx.lineTo(cx+ax*1.35,cy+ay*1.2); ctx.stroke();
@@ -122,7 +124,7 @@
     transientBuf.push(sum/ions.length); if (transientBuf.length>maxBuf) transientBuf.shift();
   }
   function drawTransient(p){
-    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('transient (time domain)', p.x+p.w/2, 24);
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center'; MSUtil.fitText(ctx,'transient (time domain)',p.w*0.92,12,8); ctx.fillText('transient (time domain)', p.x+p.w/2, 24);
     const midY=H*0.44, amp=H*0.17, x0=p.x+14, x1=p.x+p.w-20, n=transientBuf.length;
     ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.globalAlpha=0.5; ctx.beginPath(); ctx.moveTo(x0,midY); ctx.lineTo(x1,midY); ctx.stroke(); ctx.globalAlpha=1;
     ctx.strokeStyle=GREEN; ctx.globalAlpha=0.28; ctx.lineWidth=1;
@@ -130,18 +132,18 @@
     ctx.globalAlpha=1;
     ctx.strokeStyle=GREEN; ctx.lineWidth=1.6; ctx.beginPath();
     for (let i=0;i<n;i++){ const x=x0+(i/(maxBuf-1))*(x1-x0), y=midY-transientBuf[i]*amp; if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y); } ctx.stroke();
-    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('beating = frequencies add & cancel', p.x+p.w/2, H*0.74);
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='center'; ctx.fillText('beating = frequencies add & cancel', p.x+p.w/2, H*0.74);
     ctx.fillStyle=TEXT; ctx.font='18px sans-serif'; ctx.fillText('->', p.x+p.w-4, midY+6);
-    ctx.font='10px "Noto Sans Thai",sans-serif'; ctx.fillStyle=MUTED; ctx.fillText('FT', p.x+p.w-4, midY-8);
+    ctx.font=MSUtil.msFont(W,10); ctx.fillStyle=MUTED; ctx.fillText('FT', p.x+p.w-4, midY-8);
   }
   function drawSpectrum(p){
-    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('spectrum (after FT)', p.x+p.w/2, 24);
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center'; MSUtil.fitText(ctx,'spectrum (after FT)',p.w*0.92,12,8); ctx.fillText('spectrum (after FT)', p.x+p.w/2, 24);
     const baseY=H*0.66, x0=p.x+16, x1=p.x+p.w-10, plotH=H*0.34;
     ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x0,baseY); ctx.lineTo(x1,baseY); ctx.stroke();
     const mzMin=MASSES[0]*0.92, mzMax=MASSES[MASSES.length-1]*1.05, grow=Math.min(transientBuf.length/maxBuf,1);
     ctx.textAlign='center';
-    for (const io of ions){ const mx=(io.mz-mzMin)/(mzMax-mzMin), px=x0+mx*(x1-x0), h=plotH*AMPS[io.i]*grow; ctx.strokeStyle=GREEN; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(px,baseY); ctx.lineTo(px,baseY-h); ctx.stroke(); ctx.fillStyle=MUTED; ctx.font='10px "Noto Sans Thai",sans-serif'; ctx.fillText('m/z '+io.mz, px, baseY+14); }
-    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('m/z ->', p.x+p.w/2, H*0.86);
+    for (const io of ions){ const mx=(io.mz-mzMin)/(mzMax-mzMin), px=x0+mx*(x1-x0), h=plotH*AMPS[io.i]*grow; ctx.strokeStyle=GREEN; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(px,baseY); ctx.lineTo(px,baseY-h); ctx.stroke(); ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,10); ctx.fillText('m/z '+io.mz, px, baseY+14); }
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='center'; ctx.fillText('m/z ->', p.x+p.w/2, H*0.86);
     ctx.textAlign='left'; ctx.fillText('low', x0, H*0.80); ctx.textAlign='right'; ctx.fillText('high', x1, H*0.80);
   }
   replayBtn.addEventListener('click', reset);

@@ -201,3 +201,27 @@
   .ms-sidebar.open { display: block; }
   .ms-content { padding-top: 0.5rem; }
 }
+
+/* ─── Wide stage: for multi-panel canvases (e.g. FT-ICR) ───
+   Keeps a minimum drawing width so panels don't crush together
+   on phones; the stage scrolls horizontally instead of overlapping. */
+.ms-stage-wide {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.ms-stage-wide > canvas {
+  min-width: 620px;   /* below this the 3 panels would overlap */
+}
+.ms-stage-wide::-webkit-scrollbar { height: 6px; }
+.ms-stage-wide::-webkit-scrollbar-thumb { background: var(--ms-border); border-radius: 3px; }
+/* subtle hint that the figure scrolls sideways on narrow screens */
+@media (max-width: 660px) {
+  .ms-scroll-hint { display: block; }
+}
+.ms-scroll-hint {
+  display: none;
+  font-size: 12px;
+  color: var(--text3);
+  margin: 2px 0 8px;
+  font-style: italic;
+}
