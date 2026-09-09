@@ -103,6 +103,7 @@
   <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
 </footer>
 
+<script src="canvas-util.js"></script>
 <script src="nav.js"></script>
 <script>renderMsNav('ei');</script>
 
@@ -135,13 +136,13 @@
     ctx.strokeStyle=LINE; ctx.lineWidth=1.5; ctx.globalAlpha=0.5;
     ctx.strokeRect(W*0.18, H*0.22, W*0.62, H*0.56);
     ctx.globalAlpha=1;
-    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='left';
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='left';
     ctx.fillText('ion source (vacuum)', W*0.19, H*0.20);
 
     ctx.strokeStyle=ELEC; ctx.lineWidth=3;
     ctx.beginPath();
     for (let i=0;i<=6;i++){ const x=g.filamentX-18+i*6; const y=g.filTopY+(i%2?5:-5); if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);} ctx.stroke();
-    ctx.fillStyle=ELEC; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillStyle=ELEC; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='center';
     ctx.fillText('filament', g.filamentX, g.filTopY-10);
     ctx.fillStyle=MUTED; ctx.fillText('70 eV e- beam', g.filamentX+70, g.filTopY+6);
     ctx.strokeStyle=LINE; ctx.lineWidth=3;
@@ -154,7 +155,7 @@
     ctx.beginPath();
     ctx.moveTo(g.inletX+26,g.inletY-36); ctx.lineTo(g.inletX,g.inletY-9);
     ctx.lineTo(g.inletX,g.inletY+9); ctx.lineTo(g.inletX+26,g.inletY+36); ctx.stroke();
-    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center';
     ctx.fillText('to analyzer', g.inletX+6, g.inletY-44);
 
     if (autoChk.checked){ autoTimer++; if (autoTimer>70){ autoTimer=0; sendMolecule(g); } }
@@ -198,7 +199,7 @@
       ctx.beginPath(); ctx.arc(f.x,f.y,f.size,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
     }
 
-    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='center';
     ctx.fillText('1. molecule in', g.molInX+40, g.molInY-20);
     ctx.fillText('2. e- hit -> shatter', g.hitX, H*0.66);
     ctx.fillText('3. fragments -> analyzer', W*0.74, g.inletY-20);

@@ -103,6 +103,7 @@
   <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
 </footer>
 
+<script src="canvas-util.js"></script>
 <script src="nav.js"></script>
 <script>renderMsNav('esi');</script>
 
@@ -148,24 +149,20 @@
     ctx.moveTo(g.needleTipX-22,g.needleY-14); ctx.lineTo(g.needleTipX-22,g.needleY+14);
     ctx.lineTo(g.needleTipX+12,g.needleY); ctx.closePath(); ctx.fill();
     ctx.globalAlpha=1;
-    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center';
     ctx.fillText('high-voltage needle', g.needleX+52, g.needleY-28);
     ctx.fillText('Taylor cone', g.needleTipX+10, g.needleY+34);
-    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif';
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11);
     ctx.fillText('kV', g.needleX+22, g.needleY+4);
 
     ctx.strokeStyle=LINE; ctx.lineWidth=2;
     ctx.beginPath();
     ctx.moveTo(g.inletX+30,g.inletY-40); ctx.lineTo(g.inletX,g.inletY-10);
     ctx.lineTo(g.inletX,g.inletY+10); ctx.lineTo(g.inletX+30,g.inletY+40); ctx.stroke();
-    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif';
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12);
     ctx.fillText('to analyzer', g.inletX+14, g.inletY-48);
 
-    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
-    ctx.fillText('1. spray', g.needleTipX+34, H*0.86);
-    ctx.fillText('2. charged droplets', W*0.44, H*0.86);
-    ctx.fillText('3. shrink', W*0.64, H*0.86);
-    ctx.fillText('4. fission -> ions', W*0.81, H*0.86);
+    MSUtil.stageLabels(ctx, ['1. spray','2. charged droplets','3. shrink','4. fission -> ions'], W*0.06, W*0.96, H*0.86, {color:MUTED});
 
     if (t%10===0 && droplets.length<24) spawnDroplet(g);
 
