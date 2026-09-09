@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quadrupole — Basics in Mass Spectrometry</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="ms-layout">
+
+  <aside class="ms-sidebar" id="ms-sidebar"></aside>
+
+  <div class="ms-content">
+
+    <p class="breadcrumb">
+      <a href="../../ns_index.html">NS Notes</a> /
+      <a href="0-ms-basics-index.html">Basics in Mass Spectrometry</a> / Quadrupole
+    </p>
+
+    <button class="ms-menu-toggle" onclick="toggleMsNav()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      All topics
+    </button>
+
+    <div class="page-header" style="padding-top:0.5rem;">
+      <p class="page-tag">Mass Analyzer · 2 / 3</p>
+      <h1 class="page-title">Quadrupole</h1>
+      <p class="page-subtitle">A mass filter using an oscillating electric field · the workhorse of LC-MS and GC-MS</p>
+    </div>
+
+    <div class="prose">
+      <p>
+        A <strong>quadrupole</strong> is a <em>mass filter</em>: four parallel rods create an electric
+        field that combines a DC voltage and a high-frequency RF voltage. At any given setting, only ions
+        within a narrow m/z window stay on a stable path and pass through; all others swing wider and
+        wider until they hit a rod and are lost.
+      </p>
+
+      <h2>How it works</h2>
+      <p>Drag the target m/z — ions that match stay stable and reach the detector; others become unstable and hit the rods.</p>
+    </div>
+
+    <div class="ms-figure">
+      <div class="ms-controls">
+        <div class="ms-control-inline">
+          <label>Target m/z</label>
+          <input type="range" id="q-mz" min="20" max="200" value="100" step="1" />
+          <span id="q-mzout" style="font-weight:500;color:var(--text);min-width:36px;">100</span>
+        </div>
+      </div>
+
+      <div class="ms-stage">
+        <canvas id="q-cv" style="height:360px;"></canvas>
+      </div>
+
+      <div class="ms-legend">
+        <span><span class="dot" style="width:10px;height:10px;background:#1a5c3a;"></span>stable &rarr; reaches detector</span>
+        <span><span class="dot" style="width:10px;height:10px;background:#D85A30;"></span>unstable &rarr; hits the rods</span>
+        <span><span class="dot" style="width:7px;height:7px;background:#999990;"></span><span class="dot" style="width:13px;height:13px;background:#999990;margin:0 4px;"></span>larger dot = heavier</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>
+        The small inset (top-right) shows the four rods in cross-section. Opposite rods share the same
+        polarity, and the polarity flips back and forth with the RF, which is what keeps matching ions
+        oscillating on a stable path down the centre.
+      </p>
+
+      <h2>Why it is called a filter</h2>
+      <p>
+        Unlike TOF, which measures all ions at once, a quadrupole only lets one narrow m/z window through
+        at a time. By scanning the DC/RF settings, it sweeps that window across the mass range to build up
+        a spectrum. It is compact, fast, and robust &mdash; which is why it is so widely used.
+      </p>
+    </div>
+
+    <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:14px;">
+      <a href="2-2-tof.html" style="color:var(--accent); text-decoration:none;">Next: Time-of-Flight &rarr;</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+<script src="nav.js"></script>
+<script>renderMsNav('quadrupole');</script>
+
+<script>
+(function(){
+  const cv=document.getElementById('q-cv'), ctx=cv.getContext('2d');
+  const mzS=document.getElementById('q-mz'), mzOut=document.getElementById('q-mzout');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+
+  const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba', SURF='#f7f5f0';
+  const GREEN='#1a5c3a', ORANGE='#D85A30', BLUE='#2a6ba8';
+
+  function radiusFor(mz){ return 3 + (mz-20)/180*5; }
+  const ions=[]; let t=0;
+
+  function layout(){
+    return { main:{ x:14, y:H*0.32, w:W*0.80, h:H*0.62 }, inset:{ x:W-104, y:8, w:96, h:104 } };
+  }
+  function spawn(L){
+    const mz=20+Math.random()*180;
+    const cy=L.main.y+L.main.h/2;
+    ions.push({x:L.main.x+16, baseY:cy+(Math.random()-0.5)*(L.main.h*0.42), mz, ph:Math.random()*6.28});
+  }
+  function passes(mz){ return Math.abs(mz-(+mzS.value))<7; }
+
+  function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function drawRod(x,y,r,col,pol){
+    ctx.beginPath(); ctx.arc(x,y,r,0,6.283); ctx.fillStyle=col; ctx.globalAlpha=0.85; ctx.fill(); ctx.globalAlpha=1;
+    ctx.fillStyle='#fff'; ctx.font='bold 11px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(pol,x,y+1); ctx.textBaseline='alphabetic';
+  }
+  function drawInset(L){
+    const b=L.inset;
+    ctx.fillStyle=SURF; ctx.strokeStyle=LINE; ctx.lineWidth=1;
+    roundRect(b.x,b.y,b.w,b.h,8); ctx.fill(); ctx.stroke();
+    const cxp=b.x+b.w/2, cyp=b.y+b.h/2-6, r=10, off=23;
+    const phase=Math.sin(t*0.12);
+    const polV=phase>=0?'+':'\u2212', polH=phase>=0?'\u2212':'+';
+    const colV=phase>=0?ORANGE:BLUE, colH=phase>=0?BLUE:ORANGE;
+    drawRod(cxp,cyp-off,r,colV,polV); drawRod(cxp,cyp+off,r,colV,polV);
+    drawRod(cxp-off,cyp,r,colH,polH); drawRod(cxp+off,cyp,r,colH,polH);
+    ctx.fillStyle=TEXT; ctx.font='10px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('4-rod cross-section', cxp, b.y+b.h-8);
+  }
+
+  function draw(){
+    t++;
+    ctx.clearRect(0,0,W,H);
+    const L=layout(), m=L.main;
+    const centerY=m.y+m.h/2, channelH=m.h*0.40;
+    const rodY1=centerY-channelH, rodY2=centerY+channelH;
+    const srcX=m.x+16, detX=m.x+m.w-40;
+
+    ctx.strokeStyle=LINE; ctx.lineWidth=10; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(srcX,rodY1); ctx.lineTo(detX-18,rodY1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(srcX,rodY2); ctx.lineTo(detX-18,rodY2); ctx.stroke();
+
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('ions in', srcX, rodY2+26);
+    ctx.fillText('quadrupole rods (side view)', m.x+m.w*0.45, rodY1-14);
+
+    ctx.strokeStyle=LINE; ctx.lineWidth=2; ctx.strokeRect(detX,centerY-30,20,60);
+    ctx.fillStyle=TEXT; ctx.fillText('detector', detX+10, rodY2+26);
+
+    if (t%7===0 && ions.length<44) spawn(L);
+    for (let i=ions.length-1;i>=0;i--){
+      const io=ions[i], pass=passes(io.mz), rad=radiusFor(io.mz);
+      io.x+=2.0;
+      if (io.x>=detX){ ions.splice(i,1); continue; }
+      let amp;
+      if (pass){ amp=8; } else { const grow=(io.x-srcX)/(detX-srcX); amp=10+grow*grow*channelH*1.5; }
+      const yy=io.baseY+Math.sin(t*0.18+io.ph)*amp;
+      if (yy<rodY1-2||yy>rodY2+2){ ions.splice(i,1); continue; }
+      ctx.beginPath(); ctx.arc(io.x,yy,rad,0,6.283); ctx.fillStyle=pass?GREEN:ORANGE; ctx.fill();
+    }
+    drawInset(L);
+  }
+
+  let raf=null, running=false;
+  function loop(){ draw(); raf=requestAnimationFrame(loop); }
+  function start(){ if(!running){ running=true; loop(); } }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+  const iobs=new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) start(); else stop(); }); },{threshold:0.1});
+  iobs.observe(cv);
+
+  mzS.addEventListener('input', ()=>{ mzOut.textContent=mzS.value; });
+  window.addEventListener('resize', fit);
+  fit();
+})();
+</script>
+
+</body>
+</html>

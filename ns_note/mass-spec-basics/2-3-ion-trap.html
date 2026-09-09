@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ion Trap — Basics in Mass Spectrometry</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="ms-layout">
+  <aside class="ms-sidebar" id="ms-sidebar"></aside>
+  <div class="ms-content">
+
+    <p class="breadcrumb">
+      <a href="../../ns_index.html">NS Notes</a> /
+      <a href="0-ms-basics-index.html">Basics in Mass Spectrometry</a> / Ion Trap
+    </p>
+
+    <button class="ms-menu-toggle" onclick="toggleMsNav()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      All topics
+    </button>
+
+    <div class="page-header" style="padding-top:0.5rem;">
+      <p class="page-tag">Mass Analyzer · 2 / 3</p>
+      <h1 class="page-title">Ion Trap</h1>
+      <p class="page-subtitle">Trapping ions in place, then ejecting them by mass · the 3D Paul trap and the linear trap</p>
+    </div>
+
+    <div class="prose">
+      <p>
+        Unlike a quadrupole or TOF where ions fly through, an <strong>ion trap</strong> holds ions in
+        place inside an RF field, then releases them one mass at a time. There are two common geometries,
+        shown below.
+      </p>
+      <p style="font-size:14px;color:var(--text3);">
+        On this page: <a href="#trap3d" style="color:var(--accent);">3D Paul trap</a> ·
+        <a href="#linear" style="color:var(--accent);">Linear trap</a>
+      </p>
+    </div>
+
+    <!-- ===== 3D PAUL TRAP ===== -->
+    <div class="ms-figure" id="trap3d">
+      <div class="ms-figure-title">1 · 3D Paul trap</div>
+      <div class="ms-figure-note">
+        A doughnut-shaped trap: a ring electrode with two end caps. Ions of all masses are held together,
+        then the RF is ramped so they leave lightest-first. Two synchronized views &mdash; a cross-section (left)
+        and a top view (right).
+      </div>
+      <div class="ms-controls">
+        <button class="ms-btn" id="t3-phase" type="button"></button>
+        <button class="ms-btn" id="t3-reset" type="button">&#8635; Restart</button>
+        <span id="t3-label" style="font-size:13px;color:var(--text3);"></span>
+      </div>
+      <div class="ms-stage"><canvas id="t3-cv" style="height:400px;"></canvas></div>
+      <div class="ms-legend">
+        <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; ejected first</span>
+        <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; ejected last</span>
+        <span style="color:var(--text3);">same event from two viewpoints</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>
+        One device does everything &mdash; it both traps and separates. The trap fills with a mixture of masses,
+        then a mass-selective scan ejects them in order toward the detector.
+      </p>
+    </div>
+
+    <!-- ===== LINEAR TRAP ===== -->
+    <div class="ms-figure" id="linear">
+      <div class="ms-figure-title">2 · Linear ion trap</div>
+      <div class="ms-figure-note">
+        Four rods like a quadrupole, but closed at both ends. Ions are held in a line along the axis and
+        ejected sideways through a slot. A long cross-section (left) and an end view (right).
+      </div>
+      <div class="ms-controls">
+        <button class="ms-btn" id="lt-phase" type="button"></button>
+        <button class="ms-btn" id="lt-reset" type="button">&#8635; Restart</button>
+        <span id="lt-label" style="font-size:13px;color:var(--text3);"></span>
+      </div>
+      <div class="ms-stage"><canvas id="lt-cv" style="height:400px;"></canvas></div>
+      <div class="ms-legend">
+        <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; ejected first</span>
+        <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; ejected last</span>
+        <span style="color:var(--text3);">ions held in a line, ejected sideways by mass</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>
+        The linear trap holds ions along a line instead of a single point, so it can store more ions and
+        offers higher sensitivity &mdash; which is why it is common in modern hybrid instruments.
+      </p>
+    </div>
+
+    <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:14px;">
+      <a href="2-2-tof.html" style="color:var(--accent); text-decoration:none;">&larr; Previous: Time-of-Flight</a>
+      <a href="2-4-sector.html" style="color:var(--accent); text-decoration:none;">Next: Magnetic Sector &rarr;</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+<script src="nav.js"></script>
+<script>renderMsNav('ion-trap');</script>
+
+<script>
+var TEXT='#555550', MUTED='#999990', LINE='#c9c4ba', GREEN='#1a5c3a', GREEN2='#3d7a5a';
+function runWhenVisible(cv, drawFn){
+  let raf=null, running=false;
+  function loop(){ drawFn(); raf=requestAnimationFrame(loop); }
+  function start(){ if(!running){ running=true; loop(); } }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+  new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) start(); else stop(); }); },{threshold:0.1}).observe(cv);
+}
+</script>
+
+<!-- ===== 3D PAUL TRAP ===== -->
+<script>
+(function(){
+  const cv=document.getElementById('t3-cv'), ctx=cv.getContext('2d');
+  const phaseBtn=document.getElementById('t3-phase'), resetBtn=document.getElementById('t3-reset'), lbl=document.getElementById('t3-label');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  function radiusFor(mz){ return 3+(mz-50)/150*4.5; }
+  const MASS=[50,90,140,200], PER=5;
+  let ions=[], t=0, phase='trap', scanMass=0, scanTimer=0;
+  function geom(){ const hw=W*0.5; return { cross:{cx:hw*0.5,cy:H*0.46,rx:hw*0.32,ry:H*0.26}, top:{cx:hw+hw*0.44,cy:H*0.40,r:Math.min(hw*0.30,H*0.24)}, det:{x:W*0.80,y:H*0.86} }; }
+  function reset(){
+    t=0; phase='trap'; scanMass=0; scanTimer=0; ions=[];
+    MASS.forEach((mz,gi)=>{ for(let k=0;k<PER;k++){ ions.push({mz,gi,angTop:Math.random()*6.283,rrTop:0.3+Math.random()*0.5,spdTop:0.02+Math.random()*0.025,cxOff:Math.random()-0.5,cyOff:Math.random()-0.5,ph:Math.random()*6.283,ejected:false,arrived:false}); } });
+    ui();
+  }
+  function ui(){ if(phase==='trap'){ phaseBtn.textContent='Start scan (eject)'; phaseBtn.classList.remove('active'); lbl.textContent='trapping - all masses held together'; } else { phaseBtn.textContent='Back to trapping'; phaseBtn.classList.add('active'); lbl.textContent='scanning - RF ramps up, light ions leave first'; } }
+  function drawCross(g){
+    const b=g.cross;
+    ctx.strokeStyle=LINE; ctx.lineWidth=7; ctx.lineCap='round';
+    ctx.beginPath(); ctx.ellipse(b.cx,b.cy-b.ry,b.rx,b.ry*0.42,0,Math.PI*1.08,Math.PI*1.42); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(b.cx,b.cy-b.ry,b.rx,b.ry*0.42,0,Math.PI*1.58,Math.PI*1.92); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(b.cx,b.cy+b.ry,b.rx,b.ry*0.42,0,Math.PI*0.08,Math.PI*0.42); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(b.cx,b.cy+b.ry,b.rx,b.ry*0.42,0,Math.PI*0.58,Math.PI*0.92); ctx.stroke();
+    ctx.lineWidth=8;
+    ctx.beginPath(); ctx.ellipse(b.cx-b.rx,b.cy,b.rx*0.22,b.ry*0.7,0,-Math.PI*0.5,Math.PI*0.5); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(b.cx+b.rx,b.cy,b.rx*0.22,b.ry*0.7,0,Math.PI*0.5,Math.PI*1.5); ctx.stroke();
+    ctx.fillStyle=TEXT; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('end cap', b.cx, b.cy-b.ry-16); ctx.fillText('end cap', b.cx, b.cy+b.ry+22);
+    ctx.textAlign='left'; ctx.fillText('ring', b.cx-b.rx-4, b.cy-b.ry*0.7-6); ctx.textAlign='center';
+    ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.fillText('cross-section', b.cx, H*0.90);
+    return b;
+  }
+  function drawTop(g){
+    const b=g.top;
+    ctx.strokeStyle=LINE; ctx.lineWidth=6; ctx.beginPath(); ctx.arc(b.cx,b.cy,b.r,0,6.283); ctx.stroke();
+    ctx.lineWidth=1; ctx.globalAlpha=0.5; ctx.beginPath(); ctx.arc(b.cx,b.cy,b.r*0.55,0,6.283); ctx.stroke(); ctx.globalAlpha=1;
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('top view', b.cx, b.cy+b.r+28);
+    return b;
+  }
+  function draw(){
+    t++; ctx.clearRect(0,0,W,H); const g=geom();
+    ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.globalAlpha=0.4; ctx.setLineDash([4,6]);
+    ctx.beginPath(); ctx.moveTo(W*0.5,H*0.08); ctx.lineTo(W*0.5,H*0.82); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+    const cross=drawCross(g), top=drawTop(g);
+    ctx.strokeStyle=LINE; ctx.lineWidth=2; ctx.strokeRect(g.det.x,g.det.y-18,18,36);
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('detector', g.det.x+9, g.det.y+32);
+    const detPt={x:g.det.x+9,y:g.det.y};
+    if (phase==='scan'){ scanTimer++; if (scanTimer>60){ scanTimer=0; scanMass++; } }
+    let anyLeft=false;
+    for (const io of ions){
+      if (io.arrived) continue; anyLeft=true; const rad=radiusFor(io.mz);
+      if (!io.ejected){
+        io.angTop+=io.spdTop; const wob=1+0.1*Math.sin(t*0.2+io.ph);
+        const tx=top.cx+Math.cos(io.angTop)*top.r*io.rrTop*0.82*wob, ty=top.cy+Math.sin(io.angTop)*top.r*io.rrTop*0.82*wob;
+        ctx.beginPath(); ctx.arc(tx,ty,rad,0,6.283); ctx.fillStyle=GREEN; ctx.globalAlpha=0.9; ctx.fill(); ctx.globalAlpha=1;
+        const swx=io.cxOff*cross.rx*1.3+Math.sin(t*0.15+io.ph)*6, swy=io.cyOff*cross.ry*1.1+Math.cos(t*0.17+io.ph)*6;
+        const px=cross.cx+swx, py=cross.cy+swy;
+        ctx.beginPath(); ctx.arc(px,py,rad,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
+        if (phase==='scan' && io.gi<=scanMass){ io.ejected=true; io.ex=px; io.ey=py; io.stage=1; }
+      } else {
+        if (io.stage===1){ io.ey+=4.0; if (io.ey>cross.cy+cross.ry+10){ io.stage=2; const ang=Math.atan2(detPt.y-io.ey,detPt.x-io.ex); io.evx=Math.cos(ang)*4.5; io.evy=Math.sin(ang)*4.5; } }
+        else { io.ex+=io.evx; io.ey+=io.evy; if (Math.hypot(detPt.x-io.ex,detPt.y-io.ey)<10){ io.arrived=true; } }
+        ctx.beginPath(); ctx.arc(io.ex,io.ey,rad,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
+      }
+    }
+    if (phase==='scan'){ const rampX=W*0.06,rampY=H*0.06,rampW=W*0.16; ctx.fillStyle=TEXT; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='left'; ctx.fillText('RF amplitude', rampX, rampY-4); ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.strokeRect(rampX,rampY,rampW,7); const prog=Math.min((scanMass+scanTimer/60)/MASS.length,1); ctx.fillStyle=GREEN; ctx.fillRect(rampX,rampY,rampW*prog,7); }
+    if (phase==='scan' && !anyLeft){ if(!draw._d) draw._d=t; if (t-draw._d>50){ reset(); draw._d=null; } } else draw._d=null;
+  }
+  phaseBtn.addEventListener('click', ()=>{ if(phase==='trap'){ phase='scan'; scanMass=0; scanTimer=0; } else { phase='trap'; reset(); } ui(); });
+  resetBtn.addEventListener('click', reset);
+  window.addEventListener('resize', fit);
+  fit(); reset(); runWhenVisible(cv, draw);
+})();
+</script>
+
+<!-- ===== LINEAR TRAP ===== -->
+<script>
+(function(){
+  const cv=document.getElementById('lt-cv'), ctx=cv.getContext('2d');
+  const phaseBtn=document.getElementById('lt-phase'), resetBtn=document.getElementById('lt-reset'), lbl=document.getElementById('lt-label');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  function radiusFor(mz){ return 3+(mz-50)/150*4.5; }
+  const MASS=[50,90,140,200], PER=6;
+  let ions=[], t=0, phase='trap', scanMass=0, scanTimer=0;
+  function geom(){ const hw=W*0.5; return { side:{x:hw*0.10,y:H*0.30,w:hw*0.80,h:H*0.34}, end:{cx:hw+hw*0.48,cy:H*0.42,s:Math.min(hw*0.16,H*0.15)}, det:{x:W*0.44,y:H*0.86} }; }
+  function reset(){
+    t=0; phase='trap'; scanMass=0; scanTimer=0; ions=[];
+    MASS.forEach((mz,gi)=>{ for(let k=0;k<PER;k++){ ions.push({mz,gi,axPos:Math.random(),yOff:Math.random()-0.5,ph:Math.random()*6.283,exOff:Math.random()-0.5,eyOff:Math.random()-0.5,ejected:false,arrived:false,jx:0,jy:0,jvx:0,jvy:0,stage:0}); } });
+    ui();
+  }
+  function ui(){ if(phase==='trap'){ phaseBtn.textContent='Start scan (eject)'; phaseBtn.classList.remove('active'); lbl.textContent='trapping - ions held in a line'; } else { phaseBtn.textContent='Back to trapping'; phaseBtn.classList.add('active'); lbl.textContent='scanning - RF ramps up, light ions leave first'; } }
+  function drawSide(g){
+    const b=g.side, midY=b.y+b.h/2;
+    ctx.strokeStyle=LINE; ctx.lineWidth=9; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x+b.w,b.y); ctx.stroke();
+    const slotHalf=b.w*0.10;
+    ctx.beginPath(); ctx.moveTo(b.x,b.y+b.h); ctx.lineTo(b.x+b.w/2-slotHalf,b.y+b.h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b.x+b.w/2+slotHalf,b.y+b.h); ctx.lineTo(b.x+b.w,b.y+b.h); ctx.stroke();
+    ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(b.x-2,b.y-10); ctx.lineTo(b.x-2,b.y+b.h+10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b.x+b.w+2,b.y-10); ctx.lineTo(b.x+b.w+2,b.y+b.h+10); ctx.stroke();
+    ctx.fillStyle=TEXT; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('rods (side view)', b.x+b.w/2, b.y-16);
+    ctx.textAlign='left'; ctx.fillText('end cap', b.x-14, b.y+b.h+26);
+    ctx.textAlign='center'; ctx.fillText('exit slot', b.x+b.w/2, b.y+b.h+26);
+    ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.fillText('long cross-section', b.x+b.w/2, H*0.90);
+    return b;
+  }
+  function drawEnd(g){
+    const b=g.end, off=b.s, pos=[[0,-off],[0,off],[-off,0],[off,0]];
+    ctx.fillStyle=LINE;
+    for (const [dx,dy] of pos){ ctx.beginPath(); ctx.arc(b.cx+dx,b.cy+dy,b.s*0.42,0,6.283); ctx.globalAlpha=0.85; ctx.fill(); ctx.globalAlpha=1; }
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('end view', b.cx, b.cy+b.s+34);
+    return b;
+  }
+  function draw(){
+    t++; ctx.clearRect(0,0,W,H); const g=geom();
+    ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.globalAlpha=0.4; ctx.setLineDash([4,6]);
+    ctx.beginPath(); ctx.moveTo(W*0.5,H*0.08); ctx.lineTo(W*0.5,H*0.80); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+    const side=drawSide(g); drawEnd(g);
+    ctx.strokeStyle=LINE; ctx.lineWidth=2; ctx.strokeRect(g.det.x-9,g.det.y-16,18,32);
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('detector', g.det.x, g.det.y+30);
+    const detPt={x:g.det.x,y:g.det.y}, slotX=side.x+side.w/2, slotY=side.y+side.h;
+    if (phase==='scan'){ scanTimer++; if (scanTimer>60){ scanTimer=0; scanMass++; } }
+    let anyLeft=false;
+    for (const io of ions){
+      if (io.arrived) continue; anyLeft=true; const rad=radiusFor(io.mz);
+      if (!io.ejected){
+        const px=side.x+io.axPos*side.w, py=side.y+side.h/2+io.yOff*side.h*0.55+Math.sin(t*0.16+io.ph)*4;
+        ctx.beginPath(); ctx.arc(px,py,rad,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
+        const ex=g.end.cx+io.exOff*g.end.s*1.0+Math.sin(t*0.18+io.ph)*3, ey=g.end.cy+io.eyOff*g.end.s*1.0+Math.cos(t*0.19+io.ph)*3;
+        ctx.beginPath(); ctx.arc(ex,ey,rad,0,6.283); ctx.fillStyle=GREEN; ctx.globalAlpha=0.9; ctx.fill(); ctx.globalAlpha=1;
+        if (phase==='scan' && io.gi<=scanMass){ io.ejected=true; io.jx=px; io.jy=py; io.stage=1; }
+      } else {
+        if (io.stage===1){ io.jx+=(slotX-io.jx)*0.15; io.jy+=(slotY-io.jy)*0.15; if (Math.abs(io.jx-slotX)<3&&Math.abs(io.jy-slotY)<3){ io.stage=2; const ang=Math.atan2(detPt.y-io.jy,detPt.x-io.jx); io.jvx=Math.cos(ang)*4.5; io.jvy=Math.sin(ang)*4.5; } }
+        else { io.jx+=io.jvx; io.jy+=io.jvy; if (Math.hypot(detPt.x-io.jx,detPt.y-io.jy)<10){ io.arrived=true; } }
+        ctx.beginPath(); ctx.arc(io.jx,io.jy,rad,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
+      }
+    }
+    if (phase==='scan'){ const rampX=W*0.06,rampY=H*0.06,rampW=W*0.16; ctx.fillStyle=TEXT; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='left'; ctx.fillText('RF amplitude', rampX, rampY-4); ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.strokeRect(rampX,rampY,rampW,7); const prog=Math.min((scanMass+scanTimer/60)/MASS.length,1); ctx.fillStyle=GREEN; ctx.fillRect(rampX,rampY,rampW*prog,7); }
+    if (phase==='scan' && !anyLeft){ if(!draw._d) draw._d=t; if (t-draw._d>50){ reset(); draw._d=null; } } else draw._d=null;
+  }
+  phaseBtn.addEventListener('click', ()=>{ if(phase==='trap'){ phase='scan'; scanMass=0; scanTimer=0; } else { phase='trap'; reset(); } ui(); });
+  resetBtn.addEventListener('click', reset);
+  window.addEventListener('resize', fit);
+  fit(); reset(); runWhenVisible(cv, draw);
+})();
+</script>
+
+</body>
+</html>

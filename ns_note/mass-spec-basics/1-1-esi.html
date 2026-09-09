@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ESI — Basics in Mass Spectrometry</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="ms-layout">
+
+  <aside class="ms-sidebar" id="ms-sidebar"></aside>
+
+  <div class="ms-content">
+
+    <p class="breadcrumb">
+      <a href="../../ns_index.html">NS Notes</a> /
+      <a href="0-ms-basics-index.html">Basics in Mass Spectrometry</a> / ESI
+    </p>
+
+    <button class="ms-menu-toggle" onclick="toggleMsNav()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      All topics
+    </button>
+
+    <div class="page-header" style="padding-top:0.5rem;">
+      <p class="page-tag">Ionization · 1 / 3</p>
+      <h1 class="page-title">ESI — Electrospray Ionization</h1>
+      <p class="page-subtitle">Ion formation by electrospray · the most common source in LC-MS</p>
+    </div>
+
+    <div class="prose">
+      <p>
+        <strong>ESI (Electrospray Ionization)</strong> turns molecules dissolved in solution into
+        gas-phase ions. It is a <em>soft ionization</em> technique that does not break the molecule,
+        making it ideal for large molecules such as peptides and proteins, and it is the source most
+        commonly paired with LC-MS.
+      </p>
+
+      <h2>How it works — four stages</h2>
+      <p>Adjust and watch the animation below — ions (green) flow from the spray needle all the way to the analyzer inlet.</p>
+    </div>
+
+    <div class="ms-figure">
+      <div class="ms-controls">
+        <button class="ms-btn" id="esi-replay" type="button">&#8635; Replay</button>
+        <span style="font-size:13px;color:var(--text3);">
+          Taylor cone &rarr; charged droplets &rarr; shrink &rarr; Coulomb fission &rarr; ions
+        </span>
+      </div>
+
+      <div class="ms-stage">
+        <canvas id="esi-cv" style="height:390px;"></canvas>
+      </div>
+
+      <div class="ms-legend">
+        <span><span class="dot" style="width:12px;height:12px;background:#4A90D9;opacity:.5;"></span>charged droplet (solvent + ions)</span>
+        <span><span class="dot" style="width:8px;height:8px;background:#1a5c3a;"></span>free ion &rarr; into analyzer</span>
+        <span style="color:var(--text3);">+ = surface charge</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <ol style="padding-left:1.25rem;color:var(--text2);font-size:15px;">
+        <li style="margin-bottom:.4rem;"><strong>Spray:</strong> solution is pushed through a high-voltage needle (kV); the liquid surface is drawn into a cone (Taylor cone) and sprayed into a fine mist.</li>
+        <li style="margin-bottom:.4rem;"><strong>Charged droplets:</strong> the small droplets carry charge on their surface.</li>
+        <li style="margin-bottom:.4rem;"><strong>Shrink:</strong> solvent evaporates, the droplets shrink, and the surface charge becomes more concentrated.</li>
+        <li style="margin-bottom:.4rem;"><strong>Coulomb fission:</strong> when charge repulsion exceeds surface tension (the Rayleigh limit), the droplet bursts and releases free ions into the analyzer.</li>
+      </ol>
+
+      <h2>Why ESI is &ldquo;soft&rdquo;</h2>
+      <p>
+        Ions form as droplets gradually evaporate and burst, rather than being hit directly with high
+        energy. The molecule therefore stays intact (a molecular ion) — unlike hard ionization such as
+        EI, which shatters the molecule into fragments.
+      </p>
+    </div>
+
+    <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:14px;">
+      <a href="0-ms-basics-index.html" style="color:var(--accent); text-decoration:none;">&larr; Series contents</a>
+      <a href="1-2-maldi.html" style="color:var(--accent); text-decoration:none;">Next: MALDI &rarr;</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+<script src="nav.js"></script>
+<script>renderMsNav('esi');</script>
+
+<script>
+(function(){
+  const cv=document.getElementById('esi-cv'), ctx=cv.getContext('2d');
+  const replayBtn=document.getElementById('esi-replay');
+  let W,H,dpr;
+  function fit(){
+    dpr=window.devicePixelRatio||1;
+    W=cv.clientWidth; H=cv.clientHeight;
+    cv.width=W*dpr; cv.height=H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba';
+  const GREEN='#1a5c3a', DROP='#4A90D9';
+
+  let droplets=[], ions=[], t=0;
+
+  function geom(){
+    return { needleX:W*0.03, needleTipX:W*0.22, needleY:H*0.5, inletX:W*0.90, inletY:H*0.5 };
+  }
+  function spawnDroplet(g){
+    const ang=(Math.random()-0.5)*0.32, sp=1.6+Math.random()*0.6;
+    droplets.push({ x:g.needleTipX+10, y:g.needleY+(Math.random()-0.5)*6,
+      vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp, r:10+Math.random()*4,
+      charge:4+Math.floor(Math.random()*3), fissioned:false });
+  }
+
+  function draw(){
+    t++;
+    ctx.clearRect(0,0,W,H);
+    const g=geom();
+
+    ctx.strokeStyle=LINE; ctx.lineWidth=22; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(g.needleX,g.needleY); ctx.lineTo(g.needleTipX-22,g.needleY); ctx.stroke();
+    ctx.strokeStyle=DROP; ctx.lineWidth=5; ctx.globalAlpha=0.4;
+    ctx.beginPath(); ctx.moveTo(g.needleX+4,g.needleY); ctx.lineTo(g.needleTipX-24,g.needleY); ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.fillStyle=DROP; ctx.globalAlpha=0.5;
+    ctx.beginPath();
+    ctx.moveTo(g.needleTipX-22,g.needleY-14); ctx.lineTo(g.needleTipX-22,g.needleY+14);
+    ctx.lineTo(g.needleTipX+12,g.needleY); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha=1;
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('high-voltage needle', g.needleX+52, g.needleY-28);
+    ctx.fillText('Taylor cone', g.needleTipX+10, g.needleY+34);
+    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif';
+    ctx.fillText('kV', g.needleX+22, g.needleY+4);
+
+    ctx.strokeStyle=LINE; ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(g.inletX+30,g.inletY-40); ctx.lineTo(g.inletX,g.inletY-10);
+    ctx.lineTo(g.inletX,g.inletY+10); ctx.lineTo(g.inletX+30,g.inletY+40); ctx.stroke();
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif';
+    ctx.fillText('to analyzer', g.inletX+14, g.inletY-48);
+
+    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('1. spray', g.needleTipX+34, H*0.86);
+    ctx.fillText('2. charged droplets', W*0.44, H*0.86);
+    ctx.fillText('3. shrink', W*0.64, H*0.86);
+    ctx.fillText('4. fission -> ions', W*0.81, H*0.86);
+
+    if (t%10===0 && droplets.length<24) spawnDroplet(g);
+
+    for (let i=droplets.length-1;i>=0;i--){
+      const d=droplets[i];
+      d.x+=d.vx; d.y+=d.vy;
+      if (d.x>W*0.42) d.r-=0.055;
+      d.vy += (g.inletY-d.y)*0.0016;
+      if (d.r<5 && !d.fissioned){
+        d.fissioned=true;
+        for (let k=0;k<d.charge;k++){
+          ions.push({ x:d.x,y:d.y, vx:1.3+Math.random()*0.3,
+            vy:(g.inletY-d.y)*0.01 + (Math.random()-0.5)*0.3 });
+        }
+        droplets.splice(i,1); continue;
+      }
+      if (d.r<=1 || d.x>W){ droplets.splice(i,1); continue; }
+      ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,6.283);
+      ctx.fillStyle=DROP; ctx.globalAlpha=0.30; ctx.fill();
+      ctx.globalAlpha=0.75; ctx.strokeStyle=DROP; ctx.lineWidth=1; ctx.stroke();
+      ctx.globalAlpha=1;
+      ctx.fillStyle='#2a6ba8'; ctx.font='bold 9px sans-serif'; ctx.textAlign='center';
+      const nq=Math.min(d.charge, Math.max(2,Math.floor(d.r/2)));
+      for (let k=0;k<nq;k++){
+        const a=(k/nq)*6.283 + t*0.02;
+        ctx.fillText('+', d.x+Math.cos(a)*d.r*0.7, d.y+Math.sin(a)*d.r*0.7+3);
+      }
+    }
+
+    for (let i=ions.length-1;i>=0;i--){
+      const io=ions[i];
+      io.x+=io.vx; io.y+=io.vy;
+      io.vy += (g.inletY-io.y)*0.012; io.vy*=0.92;
+      if (io.x>=g.inletX){ ions.splice(i,1); continue; }
+      if (io.x>W||io.y<0||io.y>H){ ions.splice(i,1); continue; }
+      ctx.beginPath(); ctx.arc(io.x,io.y,4,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
+    }
+  }
+
+  let raf=null, running=false;
+  function loop(){ draw(); raf=requestAnimationFrame(loop); }
+  function start(){ if(!running){ running=true; loop(); } }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting) start(); else stop(); });
+  },{threshold:0.1});
+  io.observe(cv);
+
+  replayBtn.addEventListener('click', ()=>{ droplets=[]; ions=[]; t=0; });
+  window.addEventListener('resize', fit);
+  fit();
+})();
+</script>
+
+</body>
+</html>

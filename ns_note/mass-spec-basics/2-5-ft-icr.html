@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FT-ICR — Basics in Mass Spectrometry</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="ms-layout">
+  <aside class="ms-sidebar" id="ms-sidebar"></aside>
+  <div class="ms-content">
+
+    <p class="breadcrumb">
+      <a href="../../ns_index.html">NS Notes</a> /
+      <a href="0-ms-basics-index.html">Basics in Mass Spectrometry</a> / FT-ICR
+    </p>
+
+    <button class="ms-menu-toggle" onclick="toggleMsNav()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      All topics
+    </button>
+
+    <div class="page-header" style="padding-top:0.5rem;">
+      <p class="page-tag">Mass Analyzer · 2 / 3</p>
+      <h1 class="page-title">FT-ICR</h1>
+      <p class="page-subtitle">Fourier-Transform Ion Cyclotron Resonance · the highest-resolution analyzer</p>
+    </div>
+
+    <div class="prose">
+      <p>
+        In <strong>FT-ICR</strong>, ions are trapped in a strong magnetic field and orbit in circles
+        (cyclotron motion). The orbit frequency depends on m/z &mdash; light ions orbit fast, heavy ions slow.
+        The orbiting ions induce a tiny image current, which is Fourier-transformed into a spectrum.
+      </p>
+      <h2>The full cycle</h2>
+      <p>Three linked panels: ions orbit &rarr; they induce a beating transient &rarr; a Fourier transform turns it into peaks.</p>
+    </div>
+
+    <div class="ms-figure">
+      <div class="ms-controls">
+        <button class="ms-btn" id="ft-replay" type="button">&#8635; Restart excitation</button>
+        <span style="font-size:13px;color:var(--text3);">orbit &rarr; transient (beating) &rarr; Fourier transform &rarr; spectrum</span>
+      </div>
+      <div class="ms-stage"><canvas id="ft-cv" style="height:400px;"></canvas></div>
+      <div class="ms-legend">
+        <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; orbits fast &rarr; high frequency</span>
+        <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; orbits slow &rarr; low frequency</span>
+        <span style="color:var(--text3);">non-destructive measurement</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>
+        The key difference from other analyzers: FT-ICR does not slam ions into a detector. It
+        &ldquo;listens&rdquo; to the ions orbiting and decodes the signal mathematically. The longer it
+        listens, the finer the frequency resolution &mdash; which is why FT-ICR reaches the highest resolving
+        power of any mass analyzer.
+      </p>
+    </div>
+
+    <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:14px;">
+      <a href="2-4-sector.html" style="color:var(--accent); text-decoration:none;">&larr; Previous: Magnetic Sector</a>
+      <a href="2-6-orbitrap.html" style="color:var(--accent); text-decoration:none;">Next: Orbitrap &rarr;</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+<script src="nav.js"></script>
+<script>renderMsNav('ft-icr');</script>
+
+<script>
+(function(){
+  const cv=document.getElementById('ft-cv'), ctx=cv.getContext('2d');
+  const replayBtn=document.getElementById('ft-replay');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba', GREEN='#1a5c3a';
+  const MASSES=[150,170,195];
+  function freqFor(mz){ return 2.4*(170/mz); }
+  function dotR(mz){ return 4+(mz-150)/45*4; }
+  const AMPS=[1.0,0.85,0.7];
+  let ions, t, transientBuf, maxBuf=260;
+  function reset(){ t=0; transientBuf=[]; ions=MASSES.map((mz,i)=>({mz,i,f:freqFor(mz),phase:i*0.6})); }
+  function draw(){
+    t++; ctx.clearRect(0,0,W,H);
+    const p1={x:0,w:W*0.40}, p2={x:W*0.40,w:W*0.32}, p3={x:W*0.72,w:W*0.28};
+    drawCell(p1); drawTransient(p2); drawSpectrum(p3);
+  }
+  function drawCell(p){
+    const cx=p.x+p.w*0.52, cy=H*0.44, ax=p.w*0.28, ay=H*0.19;
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('ions orbiting in magnetic field', p.x+p.w/2, 24);
+    ctx.strokeStyle=MUTED; ctx.lineWidth=1.5; ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(cx,cy+ay*1.9); ctx.lineTo(cx,cy-ay*1.9); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.fillText('B', cx+12, cy-ay*1.75);
+    ctx.strokeStyle=LINE; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(cx-ax*1.35,cy-ay*1.2); ctx.lineTo(cx+ax*1.35,cy-ay*1.2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-ax*1.35,cy+ay*1.2); ctx.lineTo(cx+ax*1.35,cy+ay*1.2); ctx.stroke();
+    ctx.fillStyle=MUTED; ctx.textAlign='left'; ctx.fillText('detection plate', cx-ax*1.35, cy-ay*1.2-8); ctx.textAlign='center';
+    ctx.strokeStyle=LINE; ctx.globalAlpha=0.18; ctx.lineWidth=1; ctx.beginPath(); ctx.ellipse(cx,cy,ax,ay,0,0,6.283); ctx.stroke(); ctx.globalAlpha=1;
+    let sum=0;
+    for (const io of ions){ const ang=io.phase+t*0.05*io.f, px=cx+Math.cos(ang)*ax, py=cy+Math.sin(ang)*ay; ctx.beginPath(); ctx.arc(px,py,dotR(io.mz),0,6.283); ctx.fillStyle=GREEN; ctx.fill(); sum+=Math.sin(ang)*AMPS[io.i]; }
+    transientBuf.push(sum/ions.length); if (transientBuf.length>maxBuf) transientBuf.shift();
+  }
+  function drawTransient(p){
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('transient (time domain)', p.x+p.w/2, 24);
+    const midY=H*0.44, amp=H*0.17, x0=p.x+14, x1=p.x+p.w-20, n=transientBuf.length;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.globalAlpha=0.5; ctx.beginPath(); ctx.moveTo(x0,midY); ctx.lineTo(x1,midY); ctx.stroke(); ctx.globalAlpha=1;
+    ctx.strokeStyle=GREEN; ctx.globalAlpha=0.28; ctx.lineWidth=1;
+    for (const sign of [1,-1]){ ctx.beginPath(); for (let i=0;i<n;i++){ const x=x0+(i/(maxBuf-1))*(x1-x0); let mx=0; for (let j=Math.max(0,i-6);j<=Math.min(n-1,i+6);j++){ mx=Math.max(mx,Math.abs(transientBuf[j])); } const y=midY-sign*mx*amp; if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y); } ctx.stroke(); }
+    ctx.globalAlpha=1;
+    ctx.strokeStyle=GREEN; ctx.lineWidth=1.6; ctx.beginPath();
+    for (let i=0;i<n;i++){ const x=x0+(i/(maxBuf-1))*(x1-x0), y=midY-transientBuf[i]*amp; if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y); } ctx.stroke();
+    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('beating = frequencies add & cancel', p.x+p.w/2, H*0.74);
+    ctx.fillStyle=TEXT; ctx.font='18px sans-serif'; ctx.fillText('->', p.x+p.w-4, midY+6);
+    ctx.font='10px "Noto Sans Thai",sans-serif'; ctx.fillStyle=MUTED; ctx.fillText('FT', p.x+p.w-4, midY-8);
+  }
+  function drawSpectrum(p){
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('spectrum (after FT)', p.x+p.w/2, 24);
+    const baseY=H*0.66, x0=p.x+16, x1=p.x+p.w-10, plotH=H*0.34;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x0,baseY); ctx.lineTo(x1,baseY); ctx.stroke();
+    const mzMin=MASSES[0]*0.92, mzMax=MASSES[MASSES.length-1]*1.05, grow=Math.min(transientBuf.length/maxBuf,1);
+    ctx.textAlign='center';
+    for (const io of ions){ const mx=(io.mz-mzMin)/(mzMax-mzMin), px=x0+mx*(x1-x0), h=plotH*AMPS[io.i]*grow; ctx.strokeStyle=GREEN; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(px,baseY); ctx.lineTo(px,baseY-h); ctx.stroke(); ctx.fillStyle=MUTED; ctx.font='10px "Noto Sans Thai",sans-serif'; ctx.fillText('m/z '+io.mz, px, baseY+14); }
+    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('m/z ->', p.x+p.w/2, H*0.86);
+    ctx.textAlign='left'; ctx.fillText('low', x0, H*0.80); ctx.textAlign='right'; ctx.fillText('high', x1, H*0.80);
+  }
+  replayBtn.addEventListener('click', reset);
+  window.addEventListener('resize', fit);
+  fit(); reset();
+  let raf=null, running=false;
+  function loop(){ draw(); raf=requestAnimationFrame(loop); }
+  function start(){ if(!running){ running=true; loop(); } }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+  new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) start(); else stop(); }); },{threshold:0.1}).observe(cv);
+})();
+</script>
+
+</body>
+</html>

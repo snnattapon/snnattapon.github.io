@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Electron Multiplier — Basics in Mass Spectrometry</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="ms-layout">
+  <aside class="ms-sidebar" id="ms-sidebar"></aside>
+  <div class="ms-content">
+
+    <p class="breadcrumb">
+      <a href="../../ns_index.html">NS Notes</a> /
+      <a href="0-ms-basics-index.html">Basics in Mass Spectrometry</a> / Electron Multiplier
+    </p>
+
+    <button class="ms-menu-toggle" onclick="toggleMsNav()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      All topics
+    </button>
+
+    <div class="page-header" style="padding-top:0.5rem;">
+      <p class="page-tag">Detector · 3 / 3</p>
+      <h1 class="page-title">Electron Multiplier</h1>
+      <p class="page-subtitle">Turning a single ion into a measurable pulse by a chain reaction</p>
+    </div>
+
+    <div class="prose">
+      <p>
+        An <strong>electron multiplier</strong> is the most common detector. An ion from the analyzer
+        strikes the first <em>dynode</em>, knocking loose a few secondary electrons. Those are accelerated
+        to the next dynode, where each knocks loose more &mdash; cascading down a chain until a single ion has
+        become a pulse of millions of electrons, large enough to measure.
+      </p>
+      <h2>How it works</h2>
+      <p>Send an ion and watch the electron count double at every dynode down the zigzag chain.</p>
+    </div>
+
+    <div class="ms-figure">
+      <div class="ms-controls">
+        <button class="ms-btn" id="em-fire" type="button">Send an ion</button>
+        <label class="ms-control-inline"><input type="checkbox" id="em-auto" checked /> auto stream</label>
+        <span style="font-size:13px;color:var(--text3);">electrons hit every dynode in order &rarr; number doubles each step</span>
+      </div>
+      <div class="ms-stage"><canvas id="em-cv" style="height:390px;"></canvas></div>
+      <div class="ms-legend">
+        <span><span class="dot" style="width:9px;height:9px;background:#1a5c3a;"></span>ion from analyzer</span>
+        <span><span class="dot" style="width:6px;height:6px;background:#E85D5D;"></span>secondary electron</span>
+        <span style="color:var(--text3);">stepped voltages force each electron to the next dynode</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>
+        The electrons must hit every dynode in sequence &mdash; the dynodes are held at stepped voltages, so
+        the field always pulls electrons to the next one in line. Multiplication happens at every step,
+        which is how the detector can register even a single ion.
+      </p>
+    </div>
+
+    <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:14px;">
+      <a href="3-2-mcp.html" style="color:var(--accent); text-decoration:none;">Next: MCP &rarr;</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+<script src="nav.js"></script>
+<script>renderMsNav('electron-multiplier');</script>
+
+<script>
+(function(){
+  const cv=document.getElementById('em-cv'), ctx=cv.getContext('2d');
+  const fireBtn=document.getElementById('em-fire'), autoChk=document.getElementById('em-auto');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba', GREEN='#1a5c3a', ELEC='#E85D5D';
+  const N_DYN=6, MULT=2, START_E=1, CAP=64;
+  let dynodes=[], ions=[], electrons=[], t=0, autoTimer=0, flashAnode=0;
+  function geom(){ return { inletX:W*0.06, inletY:H*0.26, anodeX:W*0.92, anodeY:H*0.72 }; }
+  function buildDynodes(){ dynodes=[]; for (let i=0;i<N_DYN;i++){ const u=i/(N_DYN-1); dynodes.push({x:W*0.20+u*(W*0.62), y:(i%2===0)?H*0.34:H*0.60, i}); } }
+  function sendIon(g){ ions.push({x:g.inletX, y:g.inletY}); }
+  function spawnElectrons(dyn, fromIdx, count){ let n=count; if (electrons.length+n>CAP) n=Math.max(1,CAP-electrons.length); for (let k=0;k<n;k++){ electrons.push({x:dyn.x+(Math.random()-0.5)*6, y:dyn.y+(Math.random()-0.5)*6, fromDyn:fromIdx, wob:0.5+Math.random()*0.5, ph:Math.random()*6.283}); } }
+  function draw(){
+    t++; ctx.clearRect(0,0,W,H); const g=geom();
+    ctx.strokeStyle=LINE; ctx.lineWidth=1.5; ctx.globalAlpha=0.3; ctx.strokeRect(W*0.14,H*0.18,W*0.74,H*0.62); ctx.globalAlpha=1;
+    ctx.strokeStyle=LINE; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(g.inletX-6,g.inletY-24); ctx.lineTo(g.inletX+18,g.inletY-6); ctx.lineTo(g.inletX+18,g.inletY+6); ctx.lineTo(g.inletX-6,g.inletY+24); ctx.stroke();
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='left'; ctx.fillText('ion from analyzer', g.inletX-4, g.inletY-30);
+    for (const d of dynodes){
+      ctx.strokeStyle=LINE; ctx.lineWidth=4; ctx.lineCap='round'; const facing=(d.i%2===0)?1:-1;
+      ctx.beginPath(); ctx.arc(d.x,d.y,16, facing>0?Math.PI*0.15:Math.PI*1.15, facing>0?Math.PI*0.85:Math.PI*1.85); ctx.stroke();
+      ctx.fillStyle=MUTED; ctx.font='10px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('dynode '+(d.i+1), d.x, d.y+(facing>0?-22:30));
+    }
+    ctx.strokeStyle=MUTED; ctx.globalAlpha=0.25; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+    ctx.beginPath(); for (let i=0;i<dynodes.length;i++){ const d=dynodes[i]; if(i===0)ctx.moveTo(d.x,d.y);else ctx.lineTo(d.x,d.y); } ctx.lineTo(g.anodeX,g.anodeY); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+    ctx.strokeStyle=LINE; ctx.lineWidth=3; ctx.strokeRect(g.anodeX-8,g.anodeY-24,16,48);
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('anode', g.anodeX, g.anodeY+40);
+    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.fillText('-> signal', g.anodeX, g.anodeY+54);
+    if (autoChk.checked){ autoTimer++; if (autoTimer>100 && ions.length===0 && electrons.length===0){ autoTimer=0; sendIon(g); } }
+    for (let i=ions.length-1;i>=0;i--){
+      const io=ions[i], d0=dynodes[0], dx=d0.x-io.x, dy=d0.y-io.y, dist=Math.hypot(dx,dy);
+      if (dist<8){ spawnElectrons(d0,0,START_E); ions.splice(i,1); continue; }
+      io.x+=dx/dist*3.0; io.y+=dy/dist*3.0;
+      ctx.beginPath(); ctx.arc(io.x,io.y,6,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
+    }
+    for (let i=electrons.length-1;i>=0;i--){
+      const e=electrons[i], nextIdx=e.fromDyn+1; let tx,ty,isAnode=false;
+      if (nextIdx<dynodes.length){ tx=dynodes[nextIdx].x; ty=dynodes[nextIdx].y; } else { tx=g.anodeX; ty=g.anodeY+(Math.random()-0.5)*30; isAnode=true; }
+      const dx=tx-e.x, dy=ty-e.y, dist=Math.hypot(dx,dy);
+      if (dist<7){ if (isAnode){ electrons.splice(i,1); flashAnode=8; continue; } spawnElectrons(dynodes[nextIdx],nextIdx,MULT); electrons.splice(i,1); continue; }
+      e.x+=dx/dist*3.4; e.y+=dy/dist*3.4; e.x+=e.wob*Math.sin(t*0.3+e.ph);
+      ctx.beginPath(); ctx.arc(e.x,e.y,2.4,0,6.283); ctx.fillStyle=ELEC; ctx.fill();
+    }
+    if (flashAnode>0){ ctx.beginPath(); ctx.arc(g.anodeX,g.anodeY,10+flashAnode*2.5,0,6.283); ctx.strokeStyle=ELEC; ctx.globalAlpha=flashAnode/12; ctx.lineWidth=2.5; ctx.stroke(); ctx.globalAlpha=1; flashAnode-=0.5; }
+    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('1 -> 2 -> 4 -> 8 -> ... electrons double at every dynode', W*0.5, H*0.9);
+  }
+  fireBtn.addEventListener('click', ()=>{ sendIon(geom()); });
+  window.addEventListener('resize', ()=>{ fit(); buildDynodes(); });
+  fit(); buildDynodes();
+  let raf=null, running=false;
+  function loop(){ draw(); raf=requestAnimationFrame(loop); }
+  function start(){ if(!running){ running=true; loop(); } }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+  new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) start(); else stop(); }); },{threshold:0.1}).observe(cv);
+})();
+</script>
+
+</body>
+</html>

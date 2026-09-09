@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time-of-Flight — Basics in Mass Spectrometry</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="ms-layout">
+
+  <aside class="ms-sidebar" id="ms-sidebar"></aside>
+
+  <div class="ms-content">
+
+    <p class="breadcrumb">
+      <a href="../../ns_index.html">NS Notes</a> /
+      <a href="0-ms-basics-index.html">Basics in Mass Spectrometry</a> / Time-of-Flight
+    </p>
+
+    <button class="ms-menu-toggle" onclick="toggleMsNav()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      All topics
+    </button>
+
+    <div class="page-header" style="padding-top:0.5rem;">
+      <p class="page-tag">Mass Analyzer · 2 / 3</p>
+      <h1 class="page-title">Time-of-Flight (TOF)</h1>
+      <p class="page-subtitle">Separating ions by how long they take to fly · from the basic linear tube to reflectron and spiral designs</p>
+    </div>
+
+    <div class="prose">
+      <p>
+        In a <strong>time-of-flight</strong> analyzer, all ions are accelerated with the same energy.
+        Since kinetic energy is &frac12;mv&sup2;, lighter ions end up faster and heavier ions slower, so they
+        separate by arrival time as they fly down a field-free tube. TOF does not throw any ions away &mdash; it
+        detects them all, just at different times.
+      </p>
+      <p style="font-size:14px;color:var(--text3);">
+        On this page: <a href="#linear" style="color:var(--accent);">Linear</a> ·
+        <a href="#reflectron" style="color:var(--accent);">Reflectron</a> ·
+        <a href="#spiral" style="color:var(--accent);">Spiral</a>
+      </p>
+    </div>
+
+    <!-- ============ LINEAR ============ -->
+    <div class="ms-figure" id="linear">
+      <div class="ms-figure-title">1 · Linear TOF</div>
+      <div class="ms-figure-note">
+        The basic design: one straight tube. A packet of ions is released together; light ions (small dots)
+        pull ahead of heavy ions (large dots) and reach the detector first.
+      </div>
+      <div class="ms-controls">
+        <button class="ms-btn" id="lin-replay" type="button">&#8635; Release packet</button>
+        <span style="font-size:13px;color:var(--text3);">a fresh packet also releases automatically each cycle</span>
+      </div>
+      <div class="ms-stage"><canvas id="lin-cv" style="height:320px;"></canvas></div>
+      <div class="ms-legend">
+        <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; fast, arrives first</span>
+        <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; slow, arrives later</span>
+        <span style="color:var(--text3);">all ions reach the detector &mdash; only timing differs</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>
+        The relationship is <em>t &prop; &radic;(m/z)</em> &mdash; a mass four times larger takes twice as long to
+        arrive. But real ions of the same mass leave with a slight spread of energies, so they arrive a
+        little apart and the peak is broadened. The reflectron fixes exactly this.
+      </p>
+    </div>
+
+    <!-- ============ REFLECTRON ============ -->
+    <div class="ms-figure" id="reflectron">
+      <div class="ms-figure-title">2 · Reflectron</div>
+      <div class="ms-figure-note">
+        An ion mirror corrects the energy spread. Two ions of the <strong>same mass</strong> but different
+        energies enter; the faster one penetrates deeper into the mirror and spends longer there, so both
+        reach the detector together and the peak sharpens. Toggle the mirror off to see the difference.
+      </div>
+      <div class="ms-controls">
+        <button class="ms-btn" id="ref-replay" type="button">&#8635; Replay</button>
+        <label class="ms-control-inline"><input type="checkbox" id="ref-mirror" checked /> ion mirror on</label>
+        <span style="font-size:13px;color:var(--text3);">same mass, different starting energy</span>
+      </div>
+      <div class="ms-stage"><canvas id="ref-cv" style="height:380px;"></canvas></div>
+      <div class="ms-legend">
+        <span><span class="dot" style="width:11px;height:11px;background:#D85A30;"></span>higher energy &rarr; faster</span>
+        <span><span class="dot" style="width:11px;height:11px;background:#2a6ba8;"></span>lower energy &rarr; slower</span>
+        <span style="color:var(--text3);" id="ref-verdict"></span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>
+        The mirror does not make different masses arrive together (that is impossible and would break TOF).
+        It brings ions of the <em>same</em> mass but different energy back into step &mdash; the extra distance
+        inside the mirror exactly offsets the extra speed. The result is much higher resolution.
+      </p>
+    </div>
+
+    <!-- ============ SPIRAL ============ -->
+    <div class="ms-figure" id="spiral">
+      <div class="ms-figure-title">3 · Spiral TOF</div>
+      <div class="ms-figure-note">
+        To resolve masses even better, the flight path is folded into a long figure-8 spiral, giving a very
+        long flight distance in a compact space. The longer the flight, the more the masses separate.
+      </div>
+      <div class="ms-controls">
+        <button class="ms-btn" id="sp-replay" type="button">&#8635; Release packet</button>
+        <div class="ms-control-inline">
+          <label>Loops</label>
+          <input type="range" id="sp-loops" min="2" max="8" value="5" step="1" />
+          <span id="sp-loopsout" style="font-weight:500;color:var(--text);min-width:20px;">5</span>
+        </div>
+        <span id="sp-dist" style="font-size:13px;color:var(--text3);"></span>
+      </div>
+      <div class="ms-stage"><canvas id="sp-cv" style="height:380px;"></canvas></div>
+      <div class="ms-legend">
+        <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; laps ahead</span>
+        <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; falls behind</span>
+        <span style="color:var(--text3);">folded path = long flight distance in a small space</span>
+      </div>
+    </div>
+
+    <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:14px;">
+      <a href="2-1-quadrupole.html" style="color:var(--accent); text-decoration:none;">&larr; Previous: Quadrupole</a>
+      <a href="2-3-ion-trap.html" style="color:var(--accent); text-decoration:none;">Next: Ion Trap &rarr;</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+<script src="nav.js"></script>
+<script>renderMsNav('tof');</script>
+
+<script>
+/* shared light-theme palette */
+var TEXT='#555550', MUTED='#999990', LINE='#c9c4ba';
+var GREEN='#1a5c3a', ORANGE='#D85A30', BLUE='#2a6ba8';
+
+/* helper: run a draw fn only while its canvas is visible */
+function runWhenVisible(cv, drawFn){
+  let raf=null, running=false;
+  function loop(){ drawFn(); raf=requestAnimationFrame(loop); }
+  function start(){ if(!running){ running=true; loop(); } }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+  new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) start(); else stop(); }); },{threshold:0.1}).observe(cv);
+}
+</script>
+
+<!-- ===== LINEAR TOF ===== -->
+<script>
+(function(){
+  const cv=document.getElementById('lin-cv'), ctx=cv.getContext('2d');
+  const replayBtn=document.getElementById('lin-replay');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  function radiusFor(mz){ return 3 + (mz-20)/180*5; }
+  const MASSES=[30,60,100,150,200];
+  let ions=[], t=0, doneAt=null;
+  function release(){ const sx=W*0.14; ions=MASSES.map((mz,i)=>({mz,x:sx,v:3.4/Math.sqrt(mz/100),arrived:false,lane:(i-(MASSES.length-1)/2)*10})); t=0; }
+  function draw(){
+    t++; ctx.clearRect(0,0,W,H);
+    const y=H*0.52, startX=W*0.14, detX=W*0.88, tubeTop=y-46, tubeBot=y+46;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1.5; ctx.setLineDash([6,6]);
+    ctx.beginPath(); ctx.moveTo(startX,tubeTop); ctx.lineTo(detX,tubeTop); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(startX,tubeBot); ctx.lineTo(detX,tubeBot); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle=LINE; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(startX,tubeTop-6); ctx.lineTo(startX,tubeBot+6); ctx.stroke();
+    ctx.lineWidth=2; ctx.strokeRect(detX,y-40,20,80);
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('accelerator', startX, tubeBot+26);
+    ctx.fillText('field-free flight tube', (startX+detX)/2, tubeTop-14);
+    ctx.fillText('detector', detX+10, tubeBot+26);
+    ctx.fillText('same push for all ions ->', startX+96, tubeTop-14);
+    let allArrived=true;
+    for (const io of ions){
+      if (!io.arrived){ io.x+=io.v; if (io.x>=detX){ io.x=detX; io.arrived=true; } else allArrived=false; }
+      const rad=radiusFor(io.mz);
+      ctx.beginPath(); ctx.arc(io.x, y+io.lane, rad, 0, 6.283); ctx.fillStyle=GREEN; ctx.fill();
+      if (io.arrived){ ctx.beginPath(); ctx.arc(detX+10, y+io.lane, rad+2, 0, 6.283); ctx.strokeStyle=GREEN; ctx.lineWidth=1.5; ctx.stroke(); }
+    }
+    if (allArrived){ if(!doneAt) doneAt=t; if (t-doneAt>55){ release(); doneAt=null; } } else doneAt=null;
+  }
+  replayBtn.addEventListener('click', ()=>{ release(); doneAt=null; });
+  window.addEventListener('resize', fit);
+  fit(); release(); runWhenVisible(cv, draw);
+})();
+</script>
+
+<!-- ===== REFLECTRON ===== -->
+<script>
+(function(){
+  const cv=document.getElementById('ref-cv'), ctx=cv.getContext('2d');
+  const replayBtn=document.getElementById('ref-replay');
+  const mirrorChk=document.getElementById('ref-mirror');
+  const verdict=document.getElementById('ref-verdict');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  const DOT=6, T_TOTAL=270, TUBE_SHARE_MID=0.62;
+  let ions, t, doneAt=null;
+  function geom(){ return { inStart:{x:W*0.12,y:H*0.72}, mirrorFront:{x:W*0.74,y:H*0.42}, detCenter:{x:W*0.20,y:H*0.16} }; }
+  function reset(){
+    t=0; doneAt=null;
+    ions=[{color:ORANGE,v:1.25},{color:BLUE,v:0.80}];
+    const g=geom();
+    const legIn=Math.hypot(g.mirrorFront.x-g.inStart.x,g.mirrorFront.y-g.inStart.y);
+    const legOut=Math.hypot(g.detCenter.x-g.mirrorFront.x,g.detCenter.y-g.mirrorFront.y);
+    for (const io of ions){
+      const tubeRaw=1/io.v, mirRaw=io.v;
+      const tubePart=TUBE_SHARE_MID*tubeRaw, mirPart=(1-TUBE_SHARE_MID)*mirRaw;
+      const norm=T_TOTAL/(tubePart+mirPart);
+      io.frTube=tubePart*norm; io.frMir=mirPart*norm; io.tTotal=T_TOTAL;
+      io.frIn=io.frTube*0.5; io.frOut=io.frTube*0.5;
+      io.penDepth=(io.v*io.v)*70; io.f=0; io.done=false; io.x=undefined;
+    }
+  }
+  function lerp(a,b,u){ return {x:a.x+(b.x-a.x)*u, y:a.y+(b.y-a.y)*u}; }
+  function drawAccel(p,ang){ ctx.strokeStyle=LINE; ctx.lineWidth=3; const len=30,nx=Math.cos(ang+Math.PI/2),ny=Math.sin(ang+Math.PI/2); ctx.beginPath(); ctx.moveTo(p.x-nx*len,p.y-ny*len); ctx.lineTo(p.x+nx*len,p.y+ny*len); ctx.stroke(); }
+  function dashedPath(a,b){ ctx.strokeStyle=LINE; ctx.lineWidth=1.2; ctx.setLineDash([5,6]); const ang=Math.atan2(b.y-a.y,b.x-a.x),nx=Math.cos(ang+Math.PI/2),ny=Math.sin(ang+Math.PI/2); for (const off of [-14,14]){ ctx.beginPath(); ctx.moveTo(a.x+nx*off,a.y+ny*off); ctx.lineTo(b.x+nx*off,b.y+ny*off); ctx.stroke(); } ctx.setLineDash([]); }
+  function draw(){
+    t++; ctx.clearRect(0,0,W,H);
+    if (mirrorChk.checked) drawReflectron(); else drawLinear();
+  }
+  function drawReflectron(){
+    const g=geom(), {inStart,mirrorFront,detCenter}=g;
+    const inAng=Math.atan2(mirrorFront.y-inStart.y,mirrorFront.x-inStart.x), mirrorAng=inAng+Math.PI/2;
+    const depthDir={x:Math.cos(inAng),y:Math.sin(inAng)}, perp={x:Math.cos(mirrorAng),y:Math.sin(mirrorAng)};
+    dashedPath(inStart,mirrorFront); dashedPath(mirrorFront,detCenter); drawAccel(inStart,inAng);
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('accelerator', inStart.x-6, inStart.y+30);
+    const gridLen=52; ctx.strokeStyle=LINE; ctx.lineWidth=1;
+    for (let i=0;i<7;i++){ const gd=i*11, cxg=mirrorFront.x+depthDir.x*gd, cyg=mirrorFront.y+depthDir.y*gd; ctx.globalAlpha=0.4+i*0.08; ctx.beginPath(); ctx.moveTo(cxg-perp.x*gridLen,cyg-perp.y*gridLen); ctx.lineTo(cxg+perp.x*gridLen,cyg+perp.y*gridLen); ctx.stroke(); }
+    ctx.globalAlpha=1; ctx.fillStyle=TEXT; ctx.fillText('ion mirror', mirrorFront.x+depthDir.x*36+16, mirrorFront.y+depthDir.y*36+16);
+    ctx.save(); ctx.translate(detCenter.x,detCenter.y); ctx.rotate(mirrorAng); ctx.strokeStyle=LINE; ctx.lineWidth=2; ctx.strokeRect(-34,-8,68,16); ctx.restore();
+    ctx.fillStyle=TEXT; ctx.fillText('detector', detCenter.x, detCenter.y-18);
+    let bothDone=true;
+    ions.forEach((io,idx)=>{
+      const laneOff=(idx===0?-1:1)*7, lane={x:perp.x*laneOff,y:perp.y*laneOff};
+      let px,py; const f=io.f;
+      if (f<io.frIn){ const u=f/io.frIn, p=lerp(inStart,mirrorFront,u); px=p.x+lane.x; py=p.y+lane.y; }
+      else if (f<io.frIn+io.frMir){ const u=(f-io.frIn)/io.frMir, pen=io.penDepth*Math.sin(Math.PI*u); px=mirrorFront.x+depthDir.x*pen+lane.x; py=mirrorFront.y+depthDir.y*pen+lane.y; }
+      else if (f<io.tTotal){ const u=(f-io.frIn-io.frMir)/io.frOut, p=lerp(mirrorFront,detCenter,u); px=p.x+lane.x; py=p.y+lane.y; }
+      else { if(!io.done){ io.done=true; } }
+      if (!io.done){ io.f+=1; ctx.beginPath(); ctx.arc(px,py,DOT,0,6.283); ctx.fillStyle=io.color; ctx.fill(); bothDone=false; }
+      else { ctx.beginPath(); ctx.arc(detCenter.x+lane.x,detCenter.y+lane.y,DOT+1,0,6.283); ctx.strokeStyle=io.color; ctx.lineWidth=2; ctx.stroke(); }
+    });
+    finish(bothDone,true);
+  }
+  function drawLinear(){
+    const y=H*0.5, startX=W*0.12, detX=W*0.86, tubeTop=y-40, tubeBot=y+40;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1.5; ctx.setLineDash([6,6]);
+    ctx.beginPath(); ctx.moveTo(startX,tubeTop); ctx.lineTo(detX,tubeTop); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(startX,tubeBot); ctx.lineTo(detX,tubeBot); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle=LINE; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(startX,tubeTop-6); ctx.lineTo(startX,tubeBot+6); ctx.stroke();
+    ctx.lineWidth=2; ctx.strokeRect(detX,y-40,20,80);
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('accelerator', startX, tubeBot+26); ctx.fillText('detector', detX+10, tubeBot+26);
+    ctx.fillText('no mirror - linear TOF', (startX+detX)/2, tubeTop-14);
+    let bothDone=true;
+    ions.forEach((io,idx)=>{
+      const laneY=y+(idx===0?-9:9);
+      if (io.x===undefined) io.x=startX;
+      if (!io.done){ io.x+=io.v*3.0; if (io.x>=detX){ io.x=detX; io.done=true; } else bothDone=false; ctx.beginPath(); ctx.arc(io.x,laneY,DOT,0,6.283); ctx.fillStyle=io.color; ctx.fill(); }
+      else { ctx.beginPath(); ctx.arc(detX+10,laneY,DOT+1,0,6.283); ctx.strokeStyle=io.color; ctx.lineWidth=2; ctx.stroke(); }
+    });
+    finish(bothDone,false);
+  }
+  function finish(bothDone,mirror){
+    if (bothDone){ verdict.textContent=mirror?'both arrive together -> sharp peak':'faster ion arrives first -> blurred peak'; if(!doneAt) doneAt=t; if (t-doneAt>75){ reset(); } }
+    else { verdict.textContent=''; doneAt=null; }
+  }
+  replayBtn.addEventListener('click', reset);
+  mirrorChk.addEventListener('change', reset);
+  window.addEventListener('resize', fit);
+  fit(); reset(); runWhenVisible(cv, draw);
+})();
+</script>
+
+<!-- ===== SPIRAL TOF ===== -->
+<script>
+(function(){
+  const cv=document.getElementById('sp-cv'), ctx=cv.getContext('2d');
+  const replayBtn=document.getElementById('sp-replay');
+  const loopsS=document.getElementById('sp-loops'), loopsOut=document.getElementById('sp-loopsout');
+  const distOut=document.getElementById('sp-dist');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  function radiusFor(mz){ return 3 + (mz-30)/170*5; }
+  const MASSES=[40,80,130,190];
+  let path=[], pathLen=[], totalLen=0, ions=[], t=0, nLoops=5, doneAt=null;
+  function buildPath(n){
+    path=[]; pathLen=[]; totalLen=0;
+    const cx=W*0.46, cy=H*0.5, ax=W*0.30, ay=H*0.16, stackStep=(H*0.42)/n, startYoff=-(n-1)*stackStep/2, SEG=90;
+    for (let loop=0;loop<n;loop++){ const yoff=startYoff+loop*stackStep; for (let i=0;i<=SEG;i++){ const th=(i/SEG)*Math.PI*2; path.push({x:cx+ax*Math.sin(th), y:cy+ay*Math.sin(th)*Math.cos(th)+yoff}); } }
+    path.unshift({x:W*0.08,y:H*0.86}); path.push({x:W*0.90,y:H*0.14});
+    pathLen=[0]; for (let i=1;i<path.length;i++){ totalLen+=Math.hypot(path[i].x-path[i-1].x,path[i].y-path[i-1].y); pathLen.push(totalLen); }
+  }
+  function posAt(s){
+    if (s<=0) return path[0]; if (s>=totalLen) return path[path.length-1];
+    let lo=0,hi=pathLen.length-1; while(lo<hi-1){ const mid=(lo+hi)>>1; if(pathLen[mid]<s)lo=mid;else hi=mid; }
+    const seg=(s-pathLen[lo])/(pathLen[hi]-pathLen[lo]);
+    return {x:path[lo].x+(path[hi].x-path[lo].x)*seg, y:path[lo].y+(path[hi].y-path[lo].y)*seg};
+  }
+  function release(){ ions=MASSES.map(mz=>({mz,s:0,v:2.6/Math.sqrt(mz/100),done:false})); t=0; }
+  function draw(){
+    t++; ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle=LINE; ctx.lineWidth=1.2; ctx.globalAlpha=0.6; ctx.setLineDash([4,5]);
+    ctx.beginPath(); for (let i=0;i<path.length;i++){ if(i===0)ctx.moveTo(path[i].x,path[i].y);else ctx.lineTo(path[i].x,path[i].y);} ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+    const entry=path[0], exit=path[path.length-1];
+    ctx.strokeStyle=LINE; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(entry.x-4,entry.y-16); ctx.lineTo(entry.x-4,entry.y+16); ctx.stroke();
+    ctx.lineWidth=2; ctx.strokeRect(exit.x-4,exit.y-16,16,32);
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('accelerator', entry.x+18, entry.y+30); ctx.fillText('detector', exit.x+2, exit.y-22);
+    let allDone=true;
+    for (const io of ions){
+      if (!io.done){ io.s+=io.v; if (io.s>=totalLen){ io.s=totalLen; io.done=true; } else allDone=false; }
+      const p=posAt(io.s), rad=radiusFor(io.mz);
+      ctx.beginPath(); ctx.arc(p.x,p.y,rad,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
+      if (io.done){ ctx.beginPath(); ctx.arc(exit.x+4,exit.y,rad+2,0,6.283); ctx.strokeStyle=GREEN; ctx.lineWidth=1.5; ctx.stroke(); }
+    }
+    if (allDone){ if(!doneAt) doneAt=t; if (t-doneAt>60){ release(); doneAt=null; } } else doneAt=null;
+  }
+  function updateDist(){ const straight=W*0.82; distOut.textContent='flight path ~ '+(totalLen/straight).toFixed(1)+'x longer than a straight tube'; }
+  function rebuild(){ nLoops=+loopsS.value; loopsOut.textContent=nLoops; buildPath(nLoops); updateDist(); release(); doneAt=null; }
+  loopsS.addEventListener('input', rebuild);
+  replayBtn.addEventListener('click', ()=>{ release(); doneAt=null; });
+  window.addEventListener('resize', ()=>{ fit(); buildPath(nLoops); updateDist(); });
+  fit(); buildPath(nLoops); updateDist(); release(); runWhenVisible(cv, draw);
+})();
+</script>
+
+</body>
+</html>

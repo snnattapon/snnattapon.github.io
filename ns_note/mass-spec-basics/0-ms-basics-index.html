@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basics in Mass Spectrometry — Nattapon Simanon</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="site-wrap">
+  <p class="breadcrumb">
+    <a href="../../ns_index.html">NS Notes</a> / Basics in Mass Spectrometry
+  </p>
+
+  <div class="page-header">
+    <p class="page-tag">NS Notes · Interactive Series</p>
+    <h1 class="page-title">Basics in Mass Spectrometry</h1>
+    <p class="page-subtitle">
+      Interactive animations explaining how a mass spectrometer works — from generating ions,
+      to separating by mass, to detection
+    </p>
+  </div>
+
+  <div class="prose">
+    <p>
+      This series is organized into three main stages, following the order in which a mass
+      spectrometer operates. Each page is an interactive animation you can drag, click, and
+      adjust to see the real working principle. Pick any topic to begin.
+    </p>
+
+    <h2>Ionization</h2>
+    <p style="margin-top:-.25rem;">Turning sample molecules into charged ions before analysis.</p>
+    <a class="topic-link" href="1-1-esi.html">
+      <span><span class="topic-link-title">Electrospray Ionization (ESI)</span>
+      <span class="topic-link-desc">Sprays solution through a high-voltage needle into charged droplets (most common in LC-MS)</span></span>
+    </a>
+    <a class="topic-link" href="1-2-maldi.html">
+      <span><span class="topic-link-title">Matrix-Assisted Laser Desorption/Ionization (MALDI)</span>
+      <span class="topic-link-desc">Fires a laser at sample embedded in a matrix (ideal for proteins and large biomolecules)</span></span>
+    </a>
+    <a class="topic-link" href="1-3-ei.html">
+      <span><span class="topic-link-title">Electron Ionization (EI)</span>
+      <span class="topic-link-desc">Electrons strike molecules and shatter them into fragments (paired with GC-MS)</span></span>
+    </a>
+
+    <h2>Mass Analyzer</h2>
+    <p style="margin-top:-.25rem;">Separating ions by their mass-to-charge ratio (m/z) using different principles.</p>
+    <a class="topic-link" href="2-1-quadrupole.html">
+      <span><span class="topic-link-title">Quadrupole</span>
+      <span class="topic-link-desc">Filters mass with an oscillating electric field; only stable m/z passes through</span></span>
+    </a>
+    <a class="topic-link" href="2-2-tof.html">
+      <span><span class="topic-link-title">Time-of-Flight (TOF)</span>
+      <span class="topic-link-desc">Separates by flight time — light is fast, heavy is slow (Linear, Reflectron, Spiral)</span></span>
+    </a>
+    <a class="topic-link" href="2-3-ion-trap.html">
+      <span><span class="topic-link-title">Ion Trap</span>
+      <span class="topic-link-desc">Traps ions then ejects them by mass (3D Paul trap and Linear trap)</span></span>
+    </a>
+    <a class="topic-link" href="2-4-sector.html">
+      <span><span class="topic-link-title">Magnetic Sector</span>
+      <span class="topic-link-desc">A magnetic field bends the ion path according to mass</span></span>
+    </a>
+    <a class="topic-link" href="2-5-ft-icr.html">
+      <span><span class="topic-link-title">Fourier-Transform Ion Cyclotron Resonance (FT-ICR)</span>
+      <span class="topic-link-desc">Ions orbit in a magnetic field; image current is measured and Fourier-transformed</span></span>
+    </a>
+    <a class="topic-link" href="2-6-orbitrap.html">
+      <span><span class="topic-link-title">Orbitrap</span>
+      <span class="topic-link-desc">Ions orbit a central spindle; the axial oscillation frequency encodes m/z</span></span>
+    </a>
+
+    <h2>Detector</h2>
+    <p style="margin-top:-.25rem;">Converting the separated ions into an electrical signal.</p>
+    <a class="topic-link" href="3-1-electron-multiplier.html">
+      <span><span class="topic-link-title">Electron Multiplier</span>
+      <span class="topic-link-desc">Multiplies electrons in a chain reaction across several dynodes</span></span>
+    </a>
+    <a class="topic-link" href="3-2-mcp.html">
+      <span><span class="topic-link-title">Microchannel Plate (MCP)</span>
+      <span class="topic-link-desc">Millions of tiny channels multiply in parallel; fast, ideal for TOF</span></span>
+    </a>
+    <a class="topic-link" href="3-3-faraday-cup.html">
+      <span><span class="topic-link-title">Faraday Cup</span>
+      <span class="topic-link-desc">A metal cup collects ions and measures the current directly; simple and stable</span></span>
+    </a>
+  </div>
+
+  <div style="margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+    <a href="../../ns_index.html" style="font-size:14px; color:var(--accent); text-decoration:none;">&larr; Back to NS Notes</a>
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+</body>
+</html>

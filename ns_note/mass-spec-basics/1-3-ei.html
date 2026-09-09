@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EI — Basics in Mass Spectrometry</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="ms-layout">
+
+  <aside class="ms-sidebar" id="ms-sidebar"></aside>
+
+  <div class="ms-content">
+
+    <p class="breadcrumb">
+      <a href="../../ns_index.html">NS Notes</a> /
+      <a href="0-ms-basics-index.html">Basics in Mass Spectrometry</a> / EI
+    </p>
+
+    <button class="ms-menu-toggle" onclick="toggleMsNav()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      All topics
+    </button>
+
+    <div class="page-header" style="padding-top:0.5rem;">
+      <p class="page-tag">Ionization · 1 / 3</p>
+      <h1 class="page-title">EI — Electron Ionization</h1>
+      <p class="page-subtitle">A hard ionization that fragments molecules · paired with GC-MS</p>
+    </div>
+
+    <div class="prose">
+      <p>
+        <strong>EI (Electron Ionization)</strong> is a <em>hard</em> ionization technique: it breaks
+        molecules into fragments. Gas-phase molecules are struck by high-energy electrons, and the
+        resulting fragmentation pattern acts like a fingerprint for identifying each compound. EI is the
+        classic source for GC-MS with small, volatile molecules.
+      </p>
+
+      <h2>How it works</h2>
+      <p>Send a molecule and watch it get struck by the electron beam and shatter into fragments.</p>
+    </div>
+
+    <div class="ms-figure">
+      <div class="ms-controls">
+        <button class="ms-btn" id="ei-fire" type="button">Send a molecule</button>
+        <label class="ms-control-inline"><input type="checkbox" id="ei-auto" checked /> auto stream</label>
+        <span style="font-size:13px;color:var(--text3);">
+          molecule in &rarr; 70 eV electron hit &rarr; shatters &rarr; fragments &rarr; analyzer
+        </span>
+      </div>
+
+      <div class="ms-stage">
+        <canvas id="ei-cv" style="height:390px;"></canvas>
+      </div>
+
+      <div class="ms-legend">
+        <span><span class="dot" style="width:12px;height:12px;background:#C9A24B;"></span>neutral molecule</span>
+        <span><span class="dot" style="width:6px;height:6px;background:#E85D5D;"></span>70 eV electron</span>
+        <span><span class="dot" style="width:9px;height:9px;background:#1a5c3a;"></span>fragment ion &rarr; analyzer</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <ol style="padding-left:1.25rem;color:var(--text2);font-size:15px;">
+        <li style="margin-bottom:.4rem;"><strong>Molecule in:</strong> a gas-phase sample molecule enters the ion source (under vacuum).</li>
+        <li style="margin-bottom:.4rem;"><strong>Electron beam:</strong> a hot filament emits a 70 eV electron beam across the source toward an electron trap.</li>
+        <li style="margin-bottom:.4rem;"><strong>Impact:</strong> an electron knocks an electron off the molecule, forming a molecular ion (M<sup>+&bull;</sup>).</li>
+        <li style="margin-bottom:.4rem;"><strong>Fragmentation:</strong> 70 eV is far more than the molecule can hold, so it shatters into fragment ions of many sizes &mdash; the fingerprint pattern.</li>
+      </ol>
+
+      <h2>Hard vs soft</h2>
+      <p>
+        Unlike ESI and MALDI, which keep the molecule intact, EI deliberately fragments it. Those
+        fragments are highly reproducible, so EI spectra can be matched against large reference libraries
+        to identify unknown compounds.
+      </p>
+    </div>
+
+    <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:14px;">
+      <a href="1-2-maldi.html" style="color:var(--accent); text-decoration:none;">&larr; Previous: MALDI</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+<script src="nav.js"></script>
+<script>renderMsNav('ei');</script>
+
+<script>
+(function(){
+  const cv=document.getElementById('ei-cv'), ctx=cv.getContext('2d');
+  const fireBtn=document.getElementById('ei-fire');
+  const autoChk=document.getElementById('ei-auto');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+
+  const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba';
+  const GREEN='#1a5c3a', MOL='#C9A24B', ELEC='#E85D5D';
+
+  let molecules=[], electrons=[], fragments=[], t=0, autoTimer=0;
+
+  function geom(){
+    return {
+      molInX:W*0.06, molInY:H*0.5, hitX:W*0.44, hitY:H*0.5,
+      filamentX:W*0.44, filTopY:H*0.14, trapY:H*0.86, inletX:W*0.92, inletY:H*0.5
+    };
+  }
+  function sendMolecule(g){ molecules.push({ x:g.molInX, y:g.molInY+(Math.random()-0.5)*20, vx:1.6, hit:false }); }
+
+  function draw(){
+    t++;
+    ctx.clearRect(0,0,W,H);
+    const g=geom();
+
+    ctx.strokeStyle=LINE; ctx.lineWidth=1.5; ctx.globalAlpha=0.5;
+    ctx.strokeRect(W*0.18, H*0.22, W*0.62, H*0.56);
+    ctx.globalAlpha=1;
+    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='left';
+    ctx.fillText('ion source (vacuum)', W*0.19, H*0.20);
+
+    ctx.strokeStyle=ELEC; ctx.lineWidth=3;
+    ctx.beginPath();
+    for (let i=0;i<=6;i++){ const x=g.filamentX-18+i*6; const y=g.filTopY+(i%2?5:-5); if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);} ctx.stroke();
+    ctx.fillStyle=ELEC; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('filament', g.filamentX, g.filTopY-10);
+    ctx.fillStyle=MUTED; ctx.fillText('70 eV e- beam', g.filamentX+70, g.filTopY+6);
+    ctx.strokeStyle=LINE; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(g.filamentX-16,g.trapY); ctx.lineTo(g.filamentX+16,g.trapY); ctx.stroke();
+    ctx.fillStyle=MUTED; ctx.fillText('e- trap', g.filamentX, g.trapY+16);
+
+    if (t%4===0){ electrons.push({ x:g.filamentX+(Math.random()-0.5)*8, y:g.filTopY+6, vy:4.2 }); }
+
+    ctx.strokeStyle=LINE; ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(g.inletX+26,g.inletY-36); ctx.lineTo(g.inletX,g.inletY-9);
+    ctx.lineTo(g.inletX,g.inletY+9); ctx.lineTo(g.inletX+26,g.inletY+36); ctx.stroke();
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('to analyzer', g.inletX+6, g.inletY-44);
+
+    if (autoChk.checked){ autoTimer++; if (autoTimer>70){ autoTimer=0; sendMolecule(g); } }
+
+    for (let i=electrons.length-1;i>=0;i--){
+      const e=electrons[i]; e.y+=e.vy;
+      if (e.y>=g.trapY){ electrons.splice(i,1); continue; }
+      ctx.beginPath(); ctx.arc(e.x,e.y,2.2,0,6.283); ctx.fillStyle=ELEC; ctx.fill();
+    }
+
+    for (let i=molecules.length-1;i>=0;i--){
+      const m=molecules[i]; m.x+=m.vx;
+      if (!m.hit && m.x>=g.hitX){
+        m.hit=true;
+        const nFrag=3+Math.floor(Math.random()*3);
+        for (let k=0;k<nFrag;k++){
+          const a=Math.random()*6.283;
+          fragments.push({ x:m.x, y:m.y, vx:Math.cos(a)*1.0+1.3, vy:Math.sin(a)*1.0, size:2.5+Math.random()*4, born:t });
+        }
+        molecules.splice(i,1); continue;
+      }
+      ctx.fillStyle=MOL;
+      ctx.beginPath(); ctx.arc(m.x,m.y,7,0,6.283); ctx.fill();
+      ctx.beginPath(); ctx.arc(m.x-8,m.y-4,5,0,6.283); ctx.fill();
+      ctx.beginPath(); ctx.arc(m.x+7,m.y+5,5,0,6.283); ctx.fill();
+    }
+
+    for (const f of fragments){
+      if (t-f.born<8){
+        ctx.beginPath(); ctx.arc(g.hitX,g.hitY, 14-(t-f.born), 0, 6.283);
+        ctx.strokeStyle=ELEC; ctx.globalAlpha=0.3; ctx.lineWidth=2; ctx.stroke(); ctx.globalAlpha=1;
+        break;
+      }
+    }
+
+    for (let i=fragments.length-1;i>=0;i--){
+      const f=fragments[i];
+      f.x+=f.vx; f.y+=f.vy; f.vy += (g.inletY-f.y)*0.004; f.vy*=0.97;
+      if (f.x>=g.inletX){ fragments.splice(i,1); continue; }
+      if (f.x>W*0.8 && (f.y<H*0.22||f.y>H*0.78)){ fragments.splice(i,1); continue; }
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.size,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
+    }
+
+    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('1. molecule in', g.molInX+40, g.molInY-20);
+    ctx.fillText('2. e- hit -> shatter', g.hitX, H*0.66);
+    ctx.fillText('3. fragments -> analyzer', W*0.74, g.inletY-20);
+  }
+
+  let raf=null, running=false;
+  function loop(){ draw(); raf=requestAnimationFrame(loop); }
+  function start(){ if(!running){ running=true; loop(); } }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+  const iobs=new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) start(); else stop(); }); },{threshold:0.1});
+  iobs.observe(cv);
+
+  fireBtn.addEventListener('click', ()=>{ sendMolecule(geom()); });
+  window.addEventListener('resize', fit);
+  fit();
+})();
+</script>
+
+</body>
+</html>

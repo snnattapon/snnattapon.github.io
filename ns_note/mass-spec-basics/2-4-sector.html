@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magnetic Sector — Basics in Mass Spectrometry</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="ms-layout">
+  <aside class="ms-sidebar" id="ms-sidebar"></aside>
+  <div class="ms-content">
+
+    <p class="breadcrumb">
+      <a href="../../ns_index.html">NS Notes</a> /
+      <a href="0-ms-basics-index.html">Basics in Mass Spectrometry</a> / Magnetic Sector
+    </p>
+
+    <button class="ms-menu-toggle" onclick="toggleMsNav()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      All topics
+    </button>
+
+    <div class="page-header" style="padding-top:0.5rem;">
+      <p class="page-tag">Mass Analyzer · 2 / 3</p>
+      <h1 class="page-title">Magnetic Sector</h1>
+      <p class="page-subtitle">A magnetic field bends the ion path by mass · the classic, earliest analyzer</p>
+    </div>
+
+    <div class="prose">
+      <p>
+        A <strong>magnetic sector</strong> accelerates ions to the same energy, then sends them through a
+        magnetic field perpendicular to their motion. The Lorentz force bends each ion into an arc, and the
+        radius depends on m/z: heavy ions curve gently (wide radius), light ions curve tightly (small
+        radius), so the beam fans apart.
+      </p>
+      <h2>How it works</h2>
+      <p>Adjust the field strength B &mdash; only the ion whose radius matches passes through the slit to the detector; the rest hit the wall.</p>
+    </div>
+
+    <div class="ms-figure">
+      <div class="ms-controls">
+        <div class="ms-control-inline">
+          <label>Field strength B</label>
+          <input type="range" id="sec-b" min="70" max="160" value="110" step="1" />
+          <span id="sec-bout" style="font-weight:500;color:var(--text);min-width:44px;"></span>
+        </div>
+      </div>
+      <div class="ms-stage"><canvas id="sec-cv" style="height:390px;"></canvas></div>
+      <div class="ms-legend">
+        <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; tighter curve</span>
+        <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; wider curve</span>
+        <span><span class="dot" style="width:10px;height:10px;background:#D85A30;"></span>wrong radius &rarr; hits the wall</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>
+        By scanning the field strength, the sector selects which m/z reaches the detector. It also uses a
+        magnet &mdash; but note the difference from FT-ICR: a sector bends ions through a single pass, whereas
+        FT-ICR traps them to orbit many times.
+      </p>
+    </div>
+
+    <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:14px;">
+      <a href="2-3-ion-trap.html" style="color:var(--accent); text-decoration:none;">&larr; Previous: Ion Trap</a>
+      <a href="2-5-ft-icr.html" style="color:var(--accent); text-decoration:none;">Next: FT-ICR &rarr;</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+<script src="nav.js"></script>
+<script>renderMsNav('sector');</script>
+
+<script>
+(function(){
+  const cv=document.getElementById('sec-cv'), ctx=cv.getContext('2d');
+  const bS=document.getElementById('sec-b'), bOut=document.getElementById('sec-bout');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba', GREEN='#1a5c3a', ORANGE='#D85A30';
+  const MASSES=[60,100,150,210];
+  function dotR(mz){ return 3.5+(mz-60)/150*4.5; }
+  let ions=[], t=0;
+  function geom(){ return { pivotX:W*0.16, pivotY:H*0.40, entryY:H*0.86 }; }
+  function radiusFor(mz,B){ return (Math.sqrt(mz)*2600)/B; }
+  function spawn(){ ions.push({ mz:MASSES[Math.floor(Math.random()*MASSES.length)], phase:'straight', y:0, ang:0 }); }
+  function draw(){
+    t++; ctx.clearRect(0,0,W,H); const g=geom(); const B=+bS.value;
+    const slitRadius=radiusFor(120,110);
+    const cxField=g.pivotX+slitRadius, cyField=g.pivotY;
+    ctx.save(); ctx.beginPath();
+    ctx.moveTo(g.pivotX-30,g.pivotY+20);
+    ctx.arc(cxField,cyField,slitRadius+34,Math.PI,Math.PI*1.5);
+    ctx.arc(cxField,cyField,slitRadius-34,Math.PI*1.5,Math.PI,true);
+    ctx.closePath(); ctx.fillStyle=MUTED; ctx.globalAlpha=0.08; ctx.fill(); ctx.globalAlpha=1; ctx.restore();
+    ctx.fillStyle=MUTED; ctx.font='10px sans-serif'; ctx.textAlign='center';
+    for (let i=0;i<5;i++){ for (let j=0;j<3;j++){ ctx.fillText('x', g.pivotX+slitRadius*0.3+i*(slitRadius*0.12), g.pivotY-8-j*22); } }
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.fillText('magnetic field (into page)', cxField, g.pivotY-slitRadius*0.5-10);
+    ctx.strokeStyle=LINE; ctx.lineWidth=1.5; ctx.setLineDash([5,5]);
+    ctx.beginPath(); ctx.moveTo(g.pivotX-14,g.entryY); ctx.lineTo(g.pivotX-14,g.pivotY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(g.pivotX+14,g.entryY); ctx.lineTo(g.pivotX+14,g.pivotY); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=TEXT; ctx.textAlign='center'; ctx.fillText('ions in', g.pivotX, g.entryY+16); ctx.fillText('(same energy)', g.pivotX, g.entryY+30);
+    const exitX=cxField, exitY=g.pivotY-slitRadius;
+    ctx.strokeStyle=LINE; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(exitX-22,exitY-14); ctx.lineTo(exitX-6,exitY-14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(exitX+6,exitY-14); ctx.lineTo(exitX+22,exitY-14); ctx.stroke();
+    ctx.fillStyle=TEXT; ctx.fillText('slit', exitX, exitY-22);
+    ctx.lineWidth=2; ctx.strokeRect(exitX-16,exitY-52,32,26); ctx.fillText('detector', exitX, exitY-58);
+    if (t%9===0 && ions.length<30) spawn();
+    for (let i=ions.length-1;i>=0;i--){
+      const io=ions[i], rad=dotR(io.mz), R=radiusFor(io.mz,B), passes=Math.abs(R-slitRadius)<12;
+      if (io.phase==='straight'){
+        if (io.y===0) io.y=g.entryY; io.y-=2.4;
+        if (io.y<=g.pivotY){ io.phase='curve'; io.ang=Math.PI; io.R=R; io.passes=passes; }
+        ctx.beginPath(); ctx.arc(g.pivotX,io.y,rad,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
+      } else if (io.phase==='curve'){
+        const myCx=g.pivotX+io.R, myCy=g.pivotY;
+        io.ang-=0.035;
+        const px=myCx+Math.cos(io.ang)*io.R, py=myCy+Math.sin(io.ang)*io.R;
+        if (io.ang<=Math.PI*0.5){ ions.splice(i,1); continue; }
+        if (io.R>slitRadius+40||io.R<slitRadius-40){ ctx.beginPath(); ctx.arc(px,py,rad,0,6.283); ctx.fillStyle=ORANGE; ctx.fill(); if (Math.random()<0.04) ions.splice(i,1); continue; }
+        ctx.beginPath(); ctx.arc(px,py,rad,0,6.283); ctx.fillStyle=io.passes?GREEN:ORANGE; ctx.fill();
+      }
+    }
+    let best=MASSES[0], bd=1e9;
+    for (const m of MASSES){ const d=Math.abs(radiusFor(m,B)-slitRadius); if(d<bd){ bd=d; best=m; } }
+    bOut.textContent='m/z '+best;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+  let raf=null, running=false;
+  function loop(){ draw(); raf=requestAnimationFrame(loop); }
+  function start(){ if(!running){ running=true; loop(); } }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+  new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) start(); else stop(); }); },{threshold:0.1}).observe(cv);
+})();
+</script>
+
+</body>
+</html>

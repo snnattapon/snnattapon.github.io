@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faraday Cup — Basics in Mass Spectrometry</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="ms-layout">
+  <aside class="ms-sidebar" id="ms-sidebar"></aside>
+  <div class="ms-content">
+
+    <p class="breadcrumb">
+      <a href="../../ns_index.html">NS Notes</a> /
+      <a href="0-ms-basics-index.html">Basics in Mass Spectrometry</a> / Faraday Cup
+    </p>
+
+    <button class="ms-menu-toggle" onclick="toggleMsNav()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      All topics
+    </button>
+
+    <div class="page-header" style="padding-top:0.5rem;">
+      <p class="page-tag">Detector · 3 / 3</p>
+      <h1 class="page-title">Faraday Cup</h1>
+      <p class="page-subtitle">The simplest detector: catch ions, measure the current directly</p>
+    </div>
+
+    <div class="prose">
+      <p>
+        A <strong>Faraday cup</strong> is a deep metal cup that catches ions directly. As ions land and are
+        neutralized, they drive a current through the connected wire &mdash; a current you can measure directly.
+        The more ions arrive, the larger the current. There is no multiplication.
+      </p>
+      <h2>How it works</h2>
+      <p>Adjust the ion beam and watch the meter and the current trace respond.</p>
+    </div>
+
+    <div class="ms-figure">
+      <div class="ms-controls">
+        <button class="ms-btn" id="fc-fire" type="button">Send a burst</button>
+        <div class="ms-control-inline">
+          <label>Ion beam</label>
+          <input type="range" id="fc-rate" min="0" max="100" value="45" step="1" />
+          <span id="fc-rateout" style="color:var(--text3);min-width:60px;"></span>
+        </div>
+      </div>
+      <div class="ms-stage"><canvas id="fc-cv" style="height:400px;"></canvas></div>
+      <div class="ms-legend">
+        <span><span class="dot" style="width:9px;height:9px;background:#1a5c3a;"></span>ion &rarr; charge collected</span>
+        <span style="color:var(--text3);">no multiplication &mdash; the charge is measured directly (simple &amp; stable)</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>
+        Because it simply collects charge, a Faraday cup is extremely stable, accurate, and robust &mdash; often
+        used as a reference and for measuring strong ion beams. The trade-off is sensitivity: it is slower
+        and cannot register single ions the way an electron multiplier or MCP can.
+      </p>
+    </div>
+
+    <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:14px;">
+      <a href="3-2-mcp.html" style="color:var(--accent); text-decoration:none;">&larr; Previous: MCP</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+<script src="nav.js"></script>
+<script>renderMsNav('faraday-cup');</script>
+
+<script>
+(function(){
+  const cv=document.getElementById('fc-cv'), ctx=cv.getContext('2d');
+  const fireBtn=document.getElementById('fc-fire'), rateS=document.getElementById('fc-rate'), rateOut=document.getElementById('fc-rateout');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba', GREEN='#1a5c3a';
+  let ions=[], t=0, autoTimer=0, current=0, trace=[], arrivals=0; const maxTrace=160;
+  function geom(){ return { inletX:W*0.06, beamY:H*0.40, cupX:W*0.42, cupY:H*0.40, cupDepth:W*0.16, cupR:H*0.12, meterX:W*0.80, meterY:H*0.30 }; }
+  function draw(){
+    t++; ctx.clearRect(0,0,W,H); const g=geom(); const rate=+rateS.value;
+    rateOut.textContent = rate===0?'off':(rate<35?'weak':rate<70?'medium':'strong');
+    ctx.strokeStyle=LINE; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(g.inletX-2,g.beamY-22); ctx.lineTo(g.inletX+20,g.beamY-8); ctx.lineTo(g.inletX+20,g.beamY+8); ctx.lineTo(g.inletX-2,g.beamY+22); ctx.stroke();
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='left'; ctx.fillText('ions from analyzer', g.inletX-2, g.beamY-28);
+    ctx.strokeStyle=LINE; ctx.lineWidth=4; ctx.lineJoin='round';
+    ctx.beginPath();
+    ctx.moveTo(g.cupX,g.cupY-g.cupR); ctx.lineTo(g.cupX+g.cupDepth,g.cupY-g.cupR);
+    ctx.lineTo(g.cupX+g.cupDepth,g.cupY+g.cupR); ctx.lineTo(g.cupX,g.cupY+g.cupR); ctx.stroke();
+    ctx.fillStyle=LINE; ctx.globalAlpha=0.08; ctx.fillRect(g.cupX,g.cupY-g.cupR,g.cupDepth,g.cupR*2); ctx.globalAlpha=1;
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('metal cup', g.cupX+g.cupDepth/2, g.cupY+g.cupR+22);
+    ctx.strokeStyle=LINE; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(g.cupX+g.cupDepth,g.cupY+g.cupR*0.5); ctx.lineTo(g.cupX+g.cupDepth+20,g.cupY+g.cupR+30); ctx.lineTo(g.meterX,g.cupY+g.cupR+30); ctx.lineTo(g.meterX,g.meterY+50); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(g.cupX+g.cupDepth+60,g.cupY+g.cupR+30); ctx.lineTo(g.cupX+g.cupDepth+60,g.cupY+g.cupR+42); ctx.stroke();
+    for (let k=0;k<3;k++){ ctx.beginPath(); ctx.moveTo(g.cupX+g.cupDepth+54+k*3,g.cupY+g.cupR+42+k*3); ctx.lineTo(g.cupX+g.cupDepth+66-k*3,g.cupY+g.cupR+42+k*3); ctx.stroke(); }
+    if (rate>0){ autoTimer+=rate/50; while (autoTimer>=1){ autoTimer-=1; ions.push({x:g.inletX+20, y:g.beamY+(Math.random()-0.5)*14}); } }
+    for (let i=ions.length-1;i>=0;i--){ const io=ions[i]; io.x+=3.0; if (io.x>=g.cupX+g.cupDepth-6){ ions.splice(i,1); arrivals++; continue; } ctx.beginPath(); ctx.arc(io.x,io.y,5,0,6.283); ctx.fillStyle=GREEN; ctx.fill(); }
+    if (t%4===0){ const inst=Math.min(1,arrivals/3); current+=(inst-current)*0.3; arrivals=0; trace.push(current); if (trace.length>maxTrace) trace.shift(); }
+    const mx=g.meterX, my=g.meterY, mr=38;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(mx,my,mr,Math.PI*0.85,Math.PI*2.15); ctx.stroke();
+    for (let k=0;k<=5;k++){ const a=Math.PI*0.85+(k/5)*(Math.PI*1.3); ctx.beginPath(); ctx.moveTo(mx+Math.cos(a)*(mr-2),my+Math.sin(a)*(mr-2)); ctx.lineTo(mx+Math.cos(a)*(mr-8),my+Math.sin(a)*(mr-8)); ctx.stroke(); }
+    const na=Math.PI*0.85+current*(Math.PI*1.3);
+    ctx.strokeStyle=GREEN; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(mx+Math.cos(na)*(mr-10),my+Math.sin(na)*(mr-10)); ctx.stroke();
+    ctx.beginPath(); ctx.arc(mx,my,3,0,6.283); ctx.fillStyle=LINE; ctx.fill();
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('current meter', mx, my+mr+18);
+    const gx0=W*0.62, gx1=W*0.96, gy0=H*0.60, gy1=H*0.84;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.globalAlpha=0.5; ctx.beginPath(); ctx.moveTo(gx0,gy1); ctx.lineTo(gx1,gy1); ctx.stroke(); ctx.beginPath(); ctx.moveTo(gx0,gy0); ctx.lineTo(gx0,gy1); ctx.stroke(); ctx.globalAlpha=1;
+    ctx.fillStyle=MUTED; ctx.font='10px "Noto Sans Thai",sans-serif'; ctx.textAlign='left'; ctx.fillText('current', gx0+2, gy0-4); ctx.textAlign='right'; ctx.fillText('time ->', gx1, gy1+14);
+    ctx.strokeStyle=GREEN; ctx.lineWidth=1.8; ctx.beginPath();
+    for (let i=0;i<trace.length;i++){ const x=gx0+(i/(maxTrace-1))*(gx1-gx0), y=gy1-trace[i]*(gy1-gy0); if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y); } ctx.stroke();
+    ctx.fillStyle=MUTED; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('more ions -> larger current (no multiplication)', W*0.32, H*0.9);
+  }
+  fireBtn.addEventListener('click', ()=>{ const g=geom(); for (let k=0;k<14;k++){ ions.push({x:g.inletX+20, y:g.beamY+(Math.random()-0.5)*16}); } });
+  window.addEventListener('resize', fit);
+  fit();
+  let raf=null, running=false;
+  function loop(){ draw(); raf=requestAnimationFrame(loop); }
+  function start(){ if(!running){ running=true; loop(); } }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+  new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) start(); else stop(); }); },{threshold:0.1}).observe(cv);
+})();
+</script>
+
+</body>
+</html>

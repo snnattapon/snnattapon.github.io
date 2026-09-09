@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orbitrap — Basics in Mass Spectrometry</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="ms-layout">
+  <aside class="ms-sidebar" id="ms-sidebar"></aside>
+  <div class="ms-content">
+
+    <p class="breadcrumb">
+      <a href="../../ns_index.html">NS Notes</a> /
+      <a href="0-ms-basics-index.html">Basics in Mass Spectrometry</a> / Orbitrap
+    </p>
+
+    <button class="ms-menu-toggle" onclick="toggleMsNav()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      All topics
+    </button>
+
+    <div class="page-header" style="padding-top:0.5rem;">
+      <p class="page-tag">Mass Analyzer · 2 / 3</p>
+      <h1 class="page-title">Orbitrap</h1>
+      <p class="page-subtitle">Ions spiral around a central spindle in a purely electrostatic field</p>
+    </div>
+
+    <div class="prose">
+      <p>
+        The <strong>Orbitrap</strong> uses no magnet &mdash; only a static electric field. Ions are injected
+        around a central spindle electrode and follow a spring-like spiral: orbiting the axis while also
+        oscillating back and forth along it. Crucially, the <em>axial oscillation frequency</em> depends
+        only on m/z, and that is what is measured.
+      </p>
+      <h2>How it works</h2>
+      <p>Watch the full cycle: ions are injected from the left, spiral for a while, then fade as the measurement ends.</p>
+    </div>
+
+    <div class="ms-figure">
+      <div class="ms-controls">
+        <button class="ms-btn" id="orb-replay" type="button">&#8635; Re-inject ions</button>
+        <label class="ms-control-inline"><input type="checkbox" id="orb-trail" checked /> show spiral trail</label>
+        <span id="orb-stage" style="font-size:13px;color:var(--text3);min-width:150px;"></span>
+      </div>
+      <div class="ms-stage"><canvas id="orb-cv" style="height:400px;"></canvas></div>
+      <div class="ms-legend">
+        <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; oscillates fast</span>
+        <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; oscillates slow</span>
+        <span style="color:var(--text3);">measured without being destroyed &rarr; signal fades</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>
+        Like FT-ICR, the Orbitrap measures ions non-destructively: the orbiting ions induce an image
+        current, which is Fourier-transformed into a spectrum. It delivers very high resolution and mass
+        accuracy in a compact, magnet-free package.
+      </p>
+    </div>
+
+    <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:14px;">
+      <a href="2-5-ft-icr.html" style="color:var(--accent); text-decoration:none;">&larr; Previous: FT-ICR</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+<script src="nav.js"></script>
+<script>renderMsNav('orbitrap');</script>
+
+<script>
+(function(){
+  const cv=document.getElementById('orb-cv'), ctx=cv.getContext('2d');
+  const replayBtn=document.getElementById('orb-replay'), trailChk=document.getElementById('orb-trail'), stageLabel=document.getElementById('orb-stage');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba', GREEN='#1a5c3a';
+  const MASSES=[80,140,220];
+  function axFreqFor(mz){ return 0.9*Math.sqrt(120/mz); }
+  function orbFreqFor(mz){ return 0.11*Math.sqrt(120/mz); }
+  function radiusFor(mz){ return 4+(mz-80)/140*4; }
+  const PER=3, INJECT_DUR=70, ORBIT_DUR=260, FADE_DUR=90;
+  let ions, t, cyclePhase, cycleT;
+  function geom(){ return { cx:W*0.44, cy:H*0.46, axHalf:W*0.30, rMax:H*0.20 }; }
+  function reset(){
+    t=0; cyclePhase='inject'; cycleT=0; ions=[];
+    MASSES.forEach((mz,gi)=>{ for(let k=0;k<PER;k++){ ions.push({mz,gi,axPhase:Math.random()*6.283,orbPhase:(k/PER)*6.283+gi*0.6,axF:axFreqFor(mz),orbF:orbFreqFor(mz),rOrb:0.72+0.22*Math.random(),trail:[],injY:(Math.random()-0.5)*0.10}); } });
+  }
+  function drawSpindle(g){
+    const n=40;
+    ctx.strokeStyle=LINE; ctx.lineWidth=2; ctx.globalAlpha=0.14; ctx.fillStyle=LINE;
+    ctx.beginPath();
+    for (let i=0;i<=n;i++){ const u=i/n,x=g.cx-g.axHalf+u*g.axHalf*2,bulge=Math.sin(u*Math.PI),th=6+bulge*14; if(i===0)ctx.moveTo(x,g.cy-th);else ctx.lineTo(x,g.cy-th); }
+    for (let i=n;i>=0;i--){ const u=i/n,x=g.cx-g.axHalf+u*g.axHalf*2,bulge=Math.sin(u*Math.PI),th=6+bulge*14; ctx.lineTo(x,g.cy+th); }
+    ctx.closePath(); ctx.fill(); ctx.globalAlpha=0.85;
+    ctx.beginPath(); for (let i=0;i<=n;i++){ const u=i/n,x=g.cx-g.axHalf+u*g.axHalf*2,bulge=Math.sin(u*Math.PI),th=6+bulge*14; if(i===0)ctx.moveTo(x,g.cy-th);else ctx.lineTo(x,g.cy-th); } ctx.stroke();
+    ctx.beginPath(); for (let i=0;i<=n;i++){ const u=i/n,x=g.cx-g.axHalf+u*g.axHalf*2,bulge=Math.sin(u*Math.PI),th=6+bulge*14; if(i===0)ctx.moveTo(x,g.cy+th);else ctx.lineTo(x,g.cy+th); } ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1.4; ctx.globalAlpha=0.35;
+    ctx.beginPath(); for (let i=0;i<=n;i++){ const u=i/n,x=g.cx-g.axHalf+u*g.axHalf*2,bulge=Math.sin(u*Math.PI),y=g.cy-(g.rMax+16)-bulge*7; if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y); } ctx.stroke();
+    ctx.beginPath(); for (let i=0;i<=n;i++){ const u=i/n,x=g.cx-g.axHalf+u*g.axHalf*2,bulge=Math.sin(u*Math.PI),y=g.cy+(g.rMax+16)+bulge*7; if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y); } ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('central spindle electrode', g.cx, g.cy+4);
+    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.fillText('outer electrode', g.cx, g.cy-g.rMax-24);
+    ctx.textAlign='left'; ctx.fillText('injection', g.cx-g.axHalf-46, g.cy-6); ctx.textAlign='center';
+    ctx.strokeStyle=MUTED; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(g.cx-g.axHalf,g.cy+g.rMax+32); ctx.lineTo(g.cx+g.axHalf,g.cy+g.rMax+32); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=MUTED; ctx.fillText('axial oscillation sets m/z', g.cx, g.cy+g.rMax+48);
+  }
+  function draw(){
+    t++; cycleT++; ctx.clearRect(0,0,W,H); const g=geom();
+    if (cyclePhase==='inject' && cycleT>INJECT_DUR){ cyclePhase='orbit'; cycleT=0; }
+    else if (cyclePhase==='orbit' && cycleT>ORBIT_DUR){ cyclePhase='fade'; cycleT=0; }
+    else if (cyclePhase==='fade' && cycleT>FADE_DUR){ reset(); return; }
+    stageLabel.textContent = cyclePhase==='inject'?'injection - ions enter':cyclePhase==='orbit'?'orbiting - spiral around spindle':'signal fading - measurement ends';
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center'; ctx.fillText('ions injected -> spiral -> fade', g.cx, 22);
+    drawSpindle(g);
+    const injStartX=g.cx-g.axHalf-46, injEndX=g.cx-g.axHalf*0.82;
+    for (const io of ions){
+      const rad=radiusFor(io.mz);
+      if (cyclePhase==='inject'){
+        const u=Math.min(cycleT/INJECT_DUR,1), x=injStartX+(injEndX-injStartX)*u, y=g.cy+io.injY*g.rMax;
+        ctx.globalAlpha=Math.min(1,u*1.3); ctx.beginPath(); ctx.arc(x,y,rad,0,6.283); ctx.fillStyle=GREEN; ctx.fill(); ctx.globalAlpha=1; io.trail.length=0; continue;
+      }
+      let alpha = cyclePhase==='fade'?Math.max(0,1-cycleT/FADE_DUR):1;
+      let ramp=1; if (cyclePhase==='orbit') ramp=Math.min(1,cycleT/45);
+      const axial=Math.sin(io.axPhase+t*io.axF*0.05), x=g.cx+axial*g.axHalf*0.9;
+      const u2=(x-(g.cx-g.axHalf))/(g.axHalf*2), bulge=Math.sin(Math.max(0,Math.min(1,u2))*Math.PI);
+      const rOrb=io.rOrb*g.rMax*(0.55+0.45*bulge)*ramp, ang=io.orbPhase+t*io.orbF, y=g.cy+Math.sin(ang)*rOrb, depth=Math.cos(ang), r2=rad*(0.8+0.2*(depth+1)/2);
+      if (trailChk.checked){ io.trail.push({x,y}); if (io.trail.length>60) io.trail.shift(); ctx.strokeStyle=GREEN; ctx.lineWidth=1; ctx.beginPath(); io.trail.forEach((pt,i)=>{ ctx.globalAlpha=(i/io.trail.length)*0.32*alpha; if(i===0)ctx.moveTo(pt.x,pt.y);else ctx.lineTo(pt.x,pt.y); }); ctx.stroke(); ctx.globalAlpha=1; } else io.trail.length=0;
+      ctx.globalAlpha=(depth<0?0.4:1)*alpha; ctx.beginPath(); ctx.arc(x,y,r2,0,6.283); ctx.fillStyle=GREEN; ctx.fill(); ctx.globalAlpha=1;
+    }
+  }
+  replayBtn.addEventListener('click', reset);
+  trailChk.addEventListener('change', ()=>{ for(const io of ions) io.trail.length=0; });
+  window.addEventListener('resize', fit);
+  fit(); reset();
+  let raf=null, running=false;
+  function loop(){ draw(); raf=requestAnimationFrame(loop); }
+  function start(){ if(!running){ running=true; loop(); } }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+  new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) start(); else stop(); }); },{threshold:0.1}).observe(cv);
+})();
+</script>
+
+</body>
+</html>

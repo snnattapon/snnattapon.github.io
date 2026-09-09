@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MALDI — Basics in Mass Spectrometry</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="series.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">Nattapon S.</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../cv.html">CV</a></li>
+      <li><a href="../../publications.html">Publications</a></li>
+      <li><a href="../../toolkits.html">Toolkits</a></li>
+      <li><a href="../../ns_index.html" class="active">NS Notes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="ms-layout">
+
+  <aside class="ms-sidebar" id="ms-sidebar"></aside>
+
+  <div class="ms-content">
+
+    <p class="breadcrumb">
+      <a href="../../ns_index.html">NS Notes</a> /
+      <a href="0-ms-basics-index.html">Basics in Mass Spectrometry</a> / MALDI
+    </p>
+
+    <button class="ms-menu-toggle" onclick="toggleMsNav()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      All topics
+    </button>
+
+    <div class="page-header" style="padding-top:0.5rem;">
+      <p class="page-tag">Ionization · 1 / 3</p>
+      <h1 class="page-title">MALDI</h1>
+      <p class="page-subtitle">Matrix-Assisted Laser Desorption/Ionization · ideal for proteins and large biomolecules</p>
+    </div>
+
+    <div class="prose">
+      <p>
+        <strong>MALDI</strong> creates ions by firing a laser at the sample. The trick is that the sample
+        is mixed into a large excess of a light-absorbing <em>matrix</em>. The matrix absorbs the laser
+        energy and carries the sample up with it, so the sample itself is not destroyed &mdash; making MALDI a
+        <em>soft</em> ionization technique well suited to proteins and other large biomolecules.
+      </p>
+
+      <h2>How it works</h2>
+      <p>Turn the laser on and watch — the plume rises straight up into the analyzer inlet above.</p>
+    </div>
+
+    <div class="ms-figure">
+      <div class="ms-controls">
+        <button class="ms-btn" id="maldi-laser" type="button">Laser: off</button>
+        <button class="ms-btn" id="maldi-reset" type="button">&#8635; Reset sample</button>
+        <span style="font-size:13px;color:var(--text3);">
+          laser &rarr; matrix desorbs &rarr; plume carries sample up &rarr; ions &rarr; analyzer
+        </span>
+      </div>
+
+      <div class="ms-stage" style="max-width:460px;margin:0 auto;">
+        <canvas id="maldi-cv" style="height:520px;"></canvas>
+      </div>
+
+      <div class="ms-legend">
+        <span><span class="dot" style="width:6px;height:6px;background:#B08CD9;"></span>matrix (excess, absorbs laser)</span>
+        <span><span class="dot" style="width:11px;height:11px;background:#1a5c3a;"></span>sample ion &rarr; into analyzer</span>
+        <span style="color:var(--text3);">matrix protects the sample from the laser</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <ol style="padding-left:1.25rem;color:var(--text2);font-size:15px;">
+        <li style="margin-bottom:.4rem;"><strong>Crystallize:</strong> the sample is mixed with an excess of matrix and dried into crystals on a target plate, with sample molecules embedded throughout.</li>
+        <li style="margin-bottom:.4rem;"><strong>Laser hit:</strong> a pulsed UV laser strikes the spot; the matrix &mdash; not the sample &mdash; absorbs the energy.</li>
+        <li style="margin-bottom:.4rem;"><strong>Desorption:</strong> the matrix bursts into a plume that rises and carries the intact sample with it.</li>
+        <li style="margin-bottom:.4rem;"><strong>Ionization:</strong> proton transfer in the plume turns sample molecules into ions, which are accelerated into the analyzer.</li>
+      </ol>
+
+      <h2>Why the matrix matters</h2>
+      <p>
+        By absorbing the laser energy itself, the matrix shields the sample from a direct, destructive
+        hit and gently lofts it into the gas phase. MALDI is often paired with a TOF analyzer, because the
+        pulsed laser gives a clear start time for measuring flight time.
+      </p>
+    </div>
+
+    <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:14px;">
+      <a href="1-1-esi.html" style="color:var(--accent); text-decoration:none;">&larr; Previous: ESI</a>
+      <a href="1-3-ei.html" style="color:var(--accent); text-decoration:none;">Next: EI &rarr;</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
+</footer>
+
+<script src="nav.js"></script>
+<script>renderMsNav('maldi');</script>
+
+<script>
+(function(){
+  const cv=document.getElementById('maldi-cv'), ctx=cv.getContext('2d');
+  const laserBtn=document.getElementById('maldi-laser');
+  const resetBtn=document.getElementById('maldi-reset');
+  let W,H,dpr;
+  function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+
+  const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba';
+  const GREEN='#1a5c3a', MATRIX='#B08CD9', LASER='#E85D5D';
+
+  let matrixParticles=[], sampleParticles=[], ions=[], t=0;
+  let laserOn=false, fireTimer=0;
+
+  function geom(){
+    return {
+      plateY:H*0.88, spotX:W*0.5, plateHalf:W*0.22,
+      laserFromX:W*0.10, laserFromY:H*0.66,
+      inletX:W*0.5, inletY:H*0.10
+    };
+  }
+  function buildBed(g){
+    matrixParticles=[]; sampleParticles=[];
+    for (let i=0;i<80;i++){ matrixParticles.push({x:g.spotX+(Math.random()-0.5)*100, y:g.plateY-Math.random()*12}); }
+    for (let i=0;i<7;i++){ sampleParticles.push({x:g.spotX+(Math.random()-0.5)*76, y:g.plateY-Math.random()*10, flying:false, remove:false}); }
+  }
+  function firePulse(g){
+    for (const m of matrixParticles){
+      if (m.flying) continue;
+      if (Math.random()<0.5){ const dx=(m.x-g.spotX)/60; m.flying=true; m.vx=dx*0.7+(Math.random()-0.5)*0.6; m.vy=-3.4-Math.random()*1.6; m.life=90+Math.random()*40; }
+    }
+    for (const s of sampleParticles){
+      if (s.flying||s.remove) continue;
+      if (Math.random()<0.6){ const dx=(s.x-g.spotX)/60; s.flying=true; s.vx=dx*0.5+(Math.random()-0.5)*0.4; s.vy=-3.2-Math.random()*1.3; s.ionized=false; }
+    }
+  }
+
+  function draw(){
+    t++;
+    ctx.clearRect(0,0,W,H);
+    const g=geom();
+
+    ctx.strokeStyle=LINE; ctx.lineWidth=7; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(g.spotX-g.plateHalf,g.plateY+6); ctx.lineTo(g.spotX+g.plateHalf,g.plateY+6); ctx.stroke();
+    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('target plate', g.spotX, g.plateY+26);
+
+    ctx.strokeStyle=LINE; ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(g.inletX-38,g.inletY-30); ctx.lineTo(g.inletX-10,g.inletY);
+    ctx.lineTo(g.inletX+10,g.inletY); ctx.lineTo(g.inletX+38,g.inletY-30); ctx.stroke();
+    ctx.fillStyle=TEXT; ctx.fillText('to analyzer', g.inletX, g.inletY-38);
+
+    if (laserOn){
+      fireTimer++;
+      if (fireTimer>=26){ fireTimer=0; firePulse(g); }
+      ctx.strokeStyle=LASER; ctx.globalAlpha=0.4+0.4*Math.sin(t*0.8); ctx.lineWidth=4;
+      ctx.beginPath(); ctx.moveTo(g.laserFromX,g.laserFromY); ctx.lineTo(g.spotX,g.plateY-6); ctx.stroke();
+      ctx.globalAlpha=1;
+      ctx.beginPath(); ctx.arc(g.spotX,g.plateY-6, 9+5*Math.sin(t*0.9), 0, 6.283);
+      ctx.fillStyle=LASER; ctx.globalAlpha=0.3; ctx.fill(); ctx.globalAlpha=1;
+    }
+    ctx.fillStyle=LASER; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='left';
+    ctx.fillText('UV laser', g.laserFromX-4, g.laserFromY-8);
+
+    for (const m of matrixParticles){
+      if (m.flying){ m.x+=m.vx; m.y+=m.vy; m.vy+=0.02; m.life--; ctx.globalAlpha=Math.max(0,m.life/120)*0.6; }
+      else ctx.globalAlpha=0.6;
+      ctx.beginPath(); ctx.arc(m.x,m.y,2.2,0,6.283); ctx.fillStyle=MATRIX; ctx.fill(); ctx.globalAlpha=1;
+    }
+    matrixParticles=matrixParticles.filter(m=>!(m.flying&&m.life<=0));
+
+    for (const s of sampleParticles){
+      if (s.flying){
+        s.x+=s.vx; s.y+=s.vy; s.vy+=0.012;
+        if (!s.ionized && s.y < H*0.5){ s.ionized=true; ions.push({x:s.x,y:s.y, vx:(g.inletX-s.x)*0.01, vy:-2.0}); s.remove=true; }
+      }
+      if (s.remove) continue;
+      ctx.beginPath(); ctx.arc(s.x,s.y,5,0,6.283); ctx.fillStyle=s.flying?GREEN:'#3d7a5a'; ctx.fill();
+    }
+    sampleParticles=sampleParticles.filter(s=>!s.remove);
+
+    for (let i=ions.length-1;i>=0;i--){
+      const io=ions[i];
+      io.vx += (g.inletX-io.x)*0.006; io.vx*=0.94; io.y+=io.vy; io.x+=io.vx;
+      if (io.y<=g.inletY){ ions.splice(i,1); continue; }
+      if (io.y<0||io.x<0||io.x>W){ ions.splice(i,1); continue; }
+      ctx.beginPath(); ctx.arc(io.x,io.y,5,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
+    }
+
+    ctx.fillStyle=MUTED; ctx.font='11px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('1. laser hits matrix', g.spotX, g.plateY-40);
+    ctx.fillText('2. plume rises', g.spotX+g.plateHalf+2, H*0.56);
+    ctx.fillText('3. ions -> analyzer', g.spotX, H*0.24);
+
+    if (!laserOn && ions.length===0 && !matrixParticles.some(m=>m.flying)){
+      ctx.fillStyle=MUTED; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.textAlign='center';
+      ctx.fillText('turn the laser on to start', g.spotX, H*0.44);
+    }
+  }
+
+  function updateLaserBtn(){
+    laserBtn.textContent = laserOn ? 'Laser: on' : 'Laser: off';
+    laserBtn.classList.toggle('active', laserOn);
+  }
+
+  let raf=null, running=false;
+  function loop(){ draw(); raf=requestAnimationFrame(loop); }
+  function start(){ if(!running){ running=true; loop(); } }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+  const iobs=new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) start(); else stop(); }); },{threshold:0.1});
+  iobs.observe(cv);
+
+  laserBtn.addEventListener('click', ()=>{ laserOn=!laserOn; fireTimer=20; updateLaserBtn(); });
+  resetBtn.addEventListener('click', ()=>{ ions=[]; buildBed(geom()); });
+  window.addEventListener('resize', ()=>{ fit(); buildBed(geom()); });
+  fit(); buildBed(geom()); updateLaserBtn();
+})();
+</script>
+
+</body>
+</html>
