@@ -47,7 +47,7 @@
     <div class="prose">
       <p>
         In a <strong>time-of-flight</strong> analyzer, all ions are accelerated with the same energy.
-        Since kinetic energy is &frac12;mv&sup2;, lighter ions end up faster and heavier ions slower, so they
+        Since kinetic energy is <span class="ms-eq">E = &frac12;mv&sup2;</span>, lighter ions end up faster and heavier ions slower, so they
         separate by arrival time as they fly down a field-free tube. TOF does not throw any ions away &mdash; it
         detects them all, just at different times.
       </p>
@@ -69,7 +69,7 @@
         <button class="ms-btn" id="lin-replay" type="button">&#8635; Release packet</button>
         <span style="font-size:13px;color:var(--text3);">a fresh packet also releases automatically each cycle</span>
       </div>
-      <div class="ms-stage"><canvas id="lin-cv" style="height:320px;"></canvas></div>
+      <div class="ms-stage"><canvas id="lin-cv" style="height:470px;"></canvas></div>
       <div class="ms-legend">
         <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; fast, arrives first</span>
         <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; slow, arrives later</span>
@@ -79,7 +79,7 @@
 
     <div class="prose">
       <p>
-        The relationship is <em>t &prop; &radic;(m/z)</em> &mdash; a mass four times larger takes twice as long to
+        The relationship is <span class="ms-eq">t &prop; &radic;(m/z)</span> &mdash; a mass four times larger takes twice as long to
         arrive. But real ions of the same mass leave with a slight spread of energies, so they arrive a
         little apart and the peak is broadened. The reflectron fixes exactly this.
       </p>
@@ -98,7 +98,7 @@
         <label class="ms-control-inline"><input type="checkbox" id="ref-mirror" checked /> ion mirror on</label>
         <span style="font-size:13px;color:var(--text3);">same mass, different starting energy</span>
       </div>
-      <div class="ms-stage"><canvas id="ref-cv" style="height:380px;"></canvas></div>
+      <div class="ms-stage"><canvas id="ref-cv" style="height:540px;"></canvas></div>
       <div class="ms-legend">
         <span><span class="dot" style="width:11px;height:11px;background:#D85A30;"></span>higher energy &rarr; faster</span>
         <span><span class="dot" style="width:11px;height:11px;background:#2a6ba8;"></span>lower energy &rarr; slower</span>
@@ -130,7 +130,7 @@
         </div>
         <span id="sp-dist" style="font-size:13px;color:var(--text3);"></span>
       </div>
-      <div class="ms-stage"><canvas id="sp-cv" style="height:380px;"></canvas></div>
+      <div class="ms-stage"><canvas id="sp-cv" style="height:540px;"></canvas></div>
       <div class="ms-legend">
         <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; laps ahead</span>
         <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; falls behind</span>
@@ -167,6 +167,90 @@ function runWhenVisible(cv, drawFn){
   function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
   new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) start(); else stop(); }); },{threshold:0.1}).observe(cv);
 }
+
+/* ── Shared spectrum strip ──────────────────────────────────
+   Draws a small m/z spectrum inside the SAME canvas, below the
+   flight animation. Peaks grow in real time: each peak's height
+   eases toward its target only once its ion has arrived, so the
+   viewer links "ion hits detector" -> "peak appears".
+
+   ctx    : canvas 2d context
+   x0,x1  : horizontal extent of the plot area
+   yBase  : baseline y (peaks grow upward from here)
+   height : max peak height in px
+   peaks  : [{mz, target, grow}] where
+              target = final relative height 0..1 (resolution/abundance)
+              grow   = 0..1 current animation progress (caller advances it)
+   opts   : {sharp: bool}  sharp -> narrow peaks, else broad
+   The caller owns `grow` so timing stays in sync with the ions. */
+/* ─── Spectrum peak tuning ───────────────────────────────────
+   All the knobs for peak shape live here so they are easy to tweak.
+   Half-width (hw) is in px and scales with plot width W.
+     - smaller factor  = narrower / sharper peak
+     - larger  factor  = wider / broader peak
+   BELL_SPAN sets how far the skirt extends (× hw). Lower = crisper
+   base, less chance neighbouring peaks visually merge. */
+var SPEC_TUNE = {
+  sharpFactor: 0.006,  // spiral & reflectron-ON : very crisp
+  sharpMin:    1.5,
+  broadFactor: 0.028,  // linear & reflectron-OFF : broad but no longer overlapping
+  broadMin:    3,
+  bellSpan:    1.0     // was 2.2 — slightly tighter skirt
+};
+
+function drawSpectrum(ctx, x0, x1, yBase, height, peaks, opts){
+  opts = opts || {};
+  var sharp = !!opts.sharp;
+  var W = x1 - x0;
+  /* y-axis (intensity) on the left of the plot */
+  var yTop = yBase - height;
+  ctx.strokeStyle = LINE; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x0, yBase); ctx.lineTo(x0, yTop); ctx.stroke();
+  /* x-axis (m/z) baseline */
+  ctx.beginPath(); ctx.moveTo(x0, yBase); ctx.lineTo(x1, yBase); ctx.stroke();
+  /* axis labels */
+  ctx.fillStyle = MUTED; ctx.font = MSUtil.msFont(W + x0, 10);
+  ctx.textAlign = 'right';
+  ctx.fillText('m/z \u2192', x1, yBase + 15);
+  /* rotated "intensity \u2192" up the y-axis */
+  ctx.save();
+  ctx.translate(x0 - 7, yBase);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'left';
+  ctx.fillText('intensity \u2192', 0, 0);
+  ctx.restore();
+  /* map an mz (25..210 domain) to an x inside the plot */
+  var MZ_MIN = 25, MZ_MAX = 210;
+  function mzX(mz){ return x0 + (mz - MZ_MIN) / (MZ_MAX - MZ_MIN) * W; }
+  /* base peak half-width in px from the tuning block */
+  var hwBase = sharp ? Math.max(SPEC_TUNE.sharpMin, W * SPEC_TUNE.sharpFactor)
+                     : Math.max(SPEC_TUNE.broadMin, W * SPEC_TUNE.broadFactor);
+  var span = SPEC_TUNE.bellSpan;
+  for (var i = 0; i < peaks.length; i++){
+    var pk = peaks[i];
+    var cx = mzX(pk.mz);
+    var h  = height * pk.target * (pk.grow == null ? 1 : pk.grow);
+    if (h < 0.5) continue;
+    /* per-peak width multiplier, if provided (pk.width), else 1 */
+    var hw = hwBase * (pk.width || 1);
+    /* gaussian-ish bell */
+    ctx.beginPath();
+    ctx.moveTo(cx - hw * span, yBase);
+    for (var dx = -hw * span; dx <= hw * span; dx += 1.2){
+      var yy = yBase - h * Math.exp(-(dx * dx) / (2 * hw * hw));
+      ctx.lineTo(cx + dx, yy);
+    }
+    ctx.lineTo(cx + hw * span, yBase);
+    ctx.closePath();
+    ctx.fillStyle = sharp ? 'rgba(26,92,58,0.16)' : 'rgba(26,92,58,0.10)';
+    ctx.fill();
+    ctx.strokeStyle = GREEN; ctx.lineWidth = sharp ? 1.6 : 1.2;
+    ctx.stroke();
+  }
+}
+
+/* Ease a peak's `grow` toward 1 once its ion has arrived. */
+function growPeak(pk){ if (pk.grow < 1){ pk.grow += (1 - pk.grow) * 0.12 + 0.01; if (pk.grow > 1) pk.grow = 1; } }
 </script>
 
 <!-- ===== LINEAR TOF ===== -->
@@ -177,12 +261,32 @@ function runWhenVisible(cv, drawFn){
   let W,H,dpr;
   function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
   function radiusFor(mz){ return 3 + (mz-20)/180*5; }
-  const MASSES=[30,60,100,150,200];
-  let ions=[], t=0, doneAt=null;
-  function release(){ const sx=W*0.14; ions=MASSES.map((mz,i)=>({mz,x:sx,v:3.4/Math.sqrt(mz/100),arrived:false,lane:(i-(MASSES.length-1)/2)*10})); t=0; }
+  const MASSES=[45,60,100,150,200];
+  /* ion abundance per mass = how many packets that mass releases.
+     Different counts -> peaks grow to different heights = intensity.
+     Tweak these freely (keep within ~2..5 to avoid crowding). */
+  const COUNTS=[4,2,4,3,2];
+  const MAXCOUNT=Math.max.apply(null,COUNTS);
+  let ions=[], peaks=[], t=0, doneAt=null;
+  function release(){
+    const sx=W*0.14;
+    ions=[];
+    MASSES.forEach((mz,i)=>{
+      const v=3.4/Math.sqrt(mz/100), lane=(i-(MASSES.length-1)/2)*10;
+      for (let c=0;c<COUNTS[i];c++){
+        /* packets of the same mass follow each other a few px apart */
+        ions.push({mz,mi:i,x:sx-c*11,v,arrived:false,lane});
+      }
+    });
+    /* peak target scales with how many packets have arrived (0..1),
+       normalised so the most-abundant mass reaches ~0.9 */
+    peaks=MASSES.map((mz,i)=>({mz,target:0,goal:0,grow:1,arrivedCount:0,total:COUNTS[i]}));
+    t=0;
+  }
   function draw(){
     t++; ctx.clearRect(0,0,W,H);
-    const y=H*0.52, startX=W*0.14, detX=W*0.88, tubeTop=y-46, tubeBot=y+46;
+    /* ── zone split: animation on top, spectrum below ── */
+    const y=130, startX=W*0.14, detX=W*0.88, tubeTop=y-46, tubeBot=y+46;
     ctx.strokeStyle=LINE; ctx.lineWidth=1.5; ctx.setLineDash([6,6]);
     ctx.beginPath(); ctx.moveTo(startX,tubeTop); ctx.lineTo(detX,tubeTop); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(startX,tubeBot); ctx.lineTo(detX,tubeBot); ctx.stroke();
@@ -194,14 +298,24 @@ function runWhenVisible(cv, drawFn){
     ctx.fillText('field-free flight tube', (startX+detX)/2, tubeTop-14);
     ctx.fillText('detector', detX+10, tubeBot+26);
     ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11);
-    ctx.fillText('same energy for all ions', startX+4, tubeBot+42);
+    ctx.fillText('more ions of a mass \u2192 taller peak', startX+4, tubeBot+42);
     let allArrived=true;
     for (const io of ions){
-      if (!io.arrived){ io.x+=io.v; if (io.x>=detX){ io.x=detX; io.arrived=true; } else allArrived=false; }
+      if (!io.arrived){ if (io.x<startX){ io.x+=io.v; allArrived=false; } else { io.x+=io.v; if (io.x>=detX){ io.x=detX; io.arrived=true; const pk=peaks[io.mi]; pk.arrivedCount++; pk.goal=0.9*(pk.arrivedCount/MAXCOUNT); } else allArrived=false; } }
       const rad=radiusFor(io.mz);
-      ctx.beginPath(); ctx.arc(io.x, y+io.lane, rad, 0, 6.283); ctx.fillStyle=GREEN; ctx.fill();
+      if (io.x>=startX){ ctx.beginPath(); ctx.arc(io.x, y+io.lane, rad, 0, 6.283); ctx.fillStyle=GREEN; ctx.fill(); }
       if (io.arrived){ ctx.beginPath(); ctx.arc(detX+10, y+io.lane, rad+2, 0, 6.283); ctx.strokeStyle=GREEN; ctx.lineWidth=1.5; ctx.stroke(); }
     }
+    /* ease each peak's displayed height toward its goal (smooth step-ups) */
+    for (const pk of peaks){ pk.target += (pk.goal - pk.target) * 0.15; }
+    /* ── spectrum zone (lower) ── */
+    const specBase=H-38, specTitleY=tubeBot+64, specH=specBase-specTitleY-18;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.globalAlpha=0.5; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(startX,specTitleY-14); ctx.lineTo(detX+20,specTitleY-14); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='left';
+    ctx.fillText('spectrum: peak height = number of ions (intensity)', startX, specTitleY);
+    drawSpectrum(ctx, startX+34, detX, specBase, specH, peaks, {sharp:false});
     if (allArrived){ if(!doneAt) doneAt=t; if (t-doneAt>55){ release(); doneAt=null; } } else doneAt=null;
   }
   replayBtn.addEventListener('click', ()=>{ release(); doneAt=null; });
@@ -220,10 +334,13 @@ function runWhenVisible(cv, drawFn){
   let W,H,dpr;
   function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
   const DOT=6, T_TOTAL=270, TUBE_SHARE_MID=0.62;
-  let ions, t, doneAt=null;
-  function geom(){ return { inStart:{x:W*0.12,y:H*0.72}, mirrorFront:{x:W*0.74,y:H*0.42}, detCenter:{x:W*0.20,y:H*0.16} }; }
+  let ions, peak, t, doneAt=null;
+  /* animation confined to a fixed top band so the spectrum below has room */
+  function geom(){ return { inStart:{x:W*0.12,y:300}, mirrorFront:{x:W*0.74,y:150}, detCenter:{x:W*0.20,y:56} }; }
   function reset(){
     t=0; doneAt=null;
+    /* single mass, two energies -> ONE peak in the spectrum */
+    peak={mz:120, target:1.0, grow:0};
     ions=[{color:ORANGE,v:1.25},{color:BLUE,v:0.80}];
     const g=geom();
     const legIn=Math.hypot(g.mirrorFront.x-g.inStart.x,g.mirrorFront.y-g.inStart.y);
@@ -242,7 +359,19 @@ function runWhenVisible(cv, drawFn){
   function dashedPath(a,b){ ctx.strokeStyle=LINE; ctx.lineWidth=1.2; ctx.setLineDash([5,6]); const ang=Math.atan2(b.y-a.y,b.x-a.x),nx=Math.cos(ang+Math.PI/2),ny=Math.sin(ang+Math.PI/2); for (const off of [-14,14]){ ctx.beginPath(); ctx.moveTo(a.x+nx*off,a.y+ny*off); ctx.lineTo(b.x+nx*off,b.y+ny*off); ctx.stroke(); } ctx.setLineDash([]); }
   function draw(){
     t++; ctx.clearRect(0,0,W,H);
-    if (mirrorChk.checked) drawReflectron(); else drawLinear();
+    const mirror=mirrorChk.checked;
+    if (mirror) drawReflectron(); else drawLinear();
+    /* one peak: sharp when mirror focuses the energy spread, broad+low without */
+    peak.target = mirror ? 1.0 : 0.52;
+    /* ── spectrum zone (lower), fixed geometry ── */
+    const x0=W*0.12, x1=W*0.88, specBase=H-38, specTitleY=352, specH=specBase-specTitleY-18;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.globalAlpha=0.5; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(x0,specTitleY-14); ctx.lineTo(x1+20,specTitleY-14); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='left';
+    ctx.fillText(mirror ? 'spectrum: energies focused \u2192 one sharp peak (high res)'
+                        : 'spectrum: energy spread \u2192 one broad peak (low res)', x0, specTitleY);
+    drawSpectrum(ctx, x0+34, x1, specBase, specH, [peak], {sharp:mirror});
   }
   function drawReflectron(){
     const g=geom(), {inStart,mirrorFront,detCenter}=g;
@@ -270,7 +399,7 @@ function runWhenVisible(cv, drawFn){
     finish(bothDone,true);
   }
   function drawLinear(){
-    const y=H*0.5, startX=W*0.12, detX=W*0.86, tubeTop=y-40, tubeBot=y+40;
+    const y=150, startX=W*0.12, detX=W*0.86, tubeTop=y-40, tubeBot=y+40;
     ctx.strokeStyle=LINE; ctx.lineWidth=1.5; ctx.setLineDash([6,6]);
     ctx.beginPath(); ctx.moveTo(startX,tubeTop); ctx.lineTo(detX,tubeTop); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(startX,tubeBot); ctx.lineTo(detX,tubeBot); ctx.stroke(); ctx.setLineDash([]);
@@ -289,7 +418,7 @@ function runWhenVisible(cv, drawFn){
     finish(bothDone,false);
   }
   function finish(bothDone,mirror){
-    if (bothDone){ verdict.textContent=mirror?'both arrive together -> sharp peak':'faster ion arrives first -> blurred peak'; if(!doneAt) doneAt=t; if (t-doneAt>75){ reset(); } }
+    if (bothDone){ growPeak(peak); verdict.textContent=mirror?'both arrive together -> sharp peak':'faster ion arrives first -> blurred peak'; if(!doneAt) doneAt=t; if (t-doneAt>75){ reset(); } }
     else { verdict.textContent=''; doneAt=null; }
   }
   replayBtn.addEventListener('click', reset);
@@ -313,9 +442,11 @@ function runWhenVisible(cv, drawFn){
   let path=[], pathLen=[], totalLen=0, ions=[], t=0, nLoops=5, doneAt=null;
   function buildPath(n){
     path=[]; pathLen=[]; totalLen=0;
-    const cx=W*0.46, cy=H*0.5, ax=W*0.30, ay=H*0.16, stackStep=(H*0.42)/n, startYoff=-(n-1)*stackStep/2, SEG=90;
+    /* fixed top band: center ~190, total vertical spread capped so the
+       spectrum zone below is never encroached regardless of loop count */
+    const cx=W*0.46, cy=175, ax=W*0.30, ay=52, spread=210, stackStep=spread/n, startYoff=-(n-1)*stackStep/2, SEG=90;
     for (let loop=0;loop<n;loop++){ const yoff=startYoff+loop*stackStep; for (let i=0;i<=SEG;i++){ const th=(i/SEG)*Math.PI*2; path.push({x:cx+ax*Math.sin(th), y:cy+ay*Math.sin(th)*Math.cos(th)+yoff}); } }
-    path.unshift({x:W*0.08,y:H*0.86}); path.push({x:W*0.90,y:H*0.14});
+    path.unshift({x:W*0.08,y:cy+spread/2+30}); path.push({x:W*0.90,y:cy-spread/2-20});
     pathLen=[0]; for (let i=1;i<path.length;i++){ totalLen+=Math.hypot(path[i].x-path[i-1].x,path[i].y-path[i-1].y); pathLen.push(totalLen); }
   }
   function posAt(s){
@@ -324,7 +455,27 @@ function runWhenVisible(cv, drawFn){
     const seg=(s-pathLen[lo])/(pathLen[hi]-pathLen[lo]);
     return {x:path[lo].x+(path[hi].x-path[lo].x)*seg, y:path[lo].y+(path[hi].y-path[lo].y)*seg};
   }
-  function release(){ ions=MASSES.map(mz=>({mz,s:0,v:2.6/Math.sqrt(mz/100),done:false})); t=0; }
+  let peaks=[];
+  /* ion abundance per mass (same idea as linear). Tweak freely. */
+  const SP_COUNTS=[3,4,2,3];
+  const SP_MAXCOUNT=Math.max.apply(null,SP_COUNTS);
+  /* flight speed knob: higher = faster. The folded path is very long,
+     so this needs to be well above the linear speed to feel brisk.
+     12 gives ~10 s per cycle at 5 loops; raise for faster, lower for slower. */
+  const SP_SPEED=5;
+  const SP_GAP=12;  // path-length gap between packets of the same mass
+  function release(){
+    ions=[];
+    MASSES.forEach((mz,i)=>{
+      const v=SP_SPEED/Math.sqrt(mz/100);
+      for (let c=0;c<SP_COUNTS[i];c++){
+        ions.push({mz,mi:i,s:-c*SP_GAP,v,done:false});
+      }
+    });
+    /* long path -> every mass a sharp peak; height = ion count (intensity) */
+    peaks=MASSES.map((mz,i)=>({mz,target:0,goal:0,grow:1,arrivedCount:0,total:SP_COUNTS[i]}));
+    t=0;
+  }
   function draw(){
     t++; ctx.clearRect(0,0,W,H);
     ctx.strokeStyle=LINE; ctx.lineWidth=1.2; ctx.globalAlpha=0.6; ctx.setLineDash([4,5]);
@@ -337,11 +488,21 @@ function runWhenVisible(cv, drawFn){
     ctx.fillText('accelerator', entry.x+18, entry.y+30); ctx.fillText('detector', exit.x+2, exit.y-22);
     let allDone=true;
     for (const io of ions){
-      if (!io.done){ io.s+=io.v; if (io.s>=totalLen){ io.s=totalLen; io.done=true; } else allDone=false; }
+      if (!io.done){ io.s+=io.v; if (io.s>=totalLen){ io.s=totalLen; io.done=true; const pk=peaks[io.mi]; pk.arrivedCount++; pk.goal=0.9*(pk.arrivedCount/SP_MAXCOUNT); } else allDone=false; }
+      if (io.s<0) { allDone=false; continue; }  /* not released yet */
       const p=posAt(io.s), rad=radiusFor(io.mz);
       ctx.beginPath(); ctx.arc(p.x,p.y,rad,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
       if (io.done){ ctx.beginPath(); ctx.arc(exit.x+4,exit.y,rad+2,0,6.283); ctx.strokeStyle=GREEN; ctx.lineWidth=1.5; ctx.stroke(); }
     }
+    for (const pk of peaks){ pk.target += (pk.goal - pk.target) * 0.15; }
+    /* ── spectrum zone (lower), fixed geometry ── */
+    const specBase=H-38, specTitleY=372, specH=specBase-specTitleY-18, x0=W*0.10, x1=W*0.90;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.globalAlpha=0.5; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(x0,specTitleY-14); ctx.lineTo(x1+20,specTitleY-14); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='left';
+    ctx.fillText('spectrum: sharp peaks; height = ion count (intensity)', x0, specTitleY);
+    drawSpectrum(ctx, x0+34, x1, specBase, specH, peaks, {sharp:true});
     if (allDone){ if(!doneAt) doneAt=t; if (t-doneAt>60){ release(); doneAt=null; } } else doneAt=null;
   }
   function updateDist(){ const straight=W*0.82; distOut.textContent='flight path ~ '+(totalLen/straight).toFixed(1)+'x longer than a straight tube'; }

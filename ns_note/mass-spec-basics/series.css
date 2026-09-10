@@ -105,6 +105,33 @@
 }
 .ms-menu-toggle svg { width: 18px; height: 18px; }
 
+/* ─── Equation callout ───
+   Subtle emphasis for a physics/math relationship inside prose.
+   Not a big banner — just enough that the eye catches on it and
+   registers "this is the key relationship", not ordinary text. */
+.ms-eq {
+  display: inline-block;
+  margin: 0.15rem 0;
+  padding: 3px 12px;
+  background: var(--ms-accent-light);
+  border-left: 3px solid var(--ms-accent);
+  border-radius: 0 5px 5px 0;
+  font-family: var(--serif, Georgia, serif);
+  font-style: italic;
+  font-size: 1.02em;
+  color: var(--ms-accent);
+  white-space: nowrap;
+}
+/* When the whole line is the equation (its own centered block) */
+.ms-eq-block {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0.9rem 0;
+  padding: 7px 16px;
+  overflow-x: auto;
+}
+
 /* ─── Figure block ─── */
 .ms-figure {
   margin: 1.5rem 0 2.5rem;
