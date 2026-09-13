@@ -298,7 +298,6 @@ function growPeak(pk){ if (pk.grow < 1){ pk.grow += (1 - pk.grow) * 0.12 + 0.01;
     ctx.fillText('field-free flight tube', (startX+detX)/2, tubeTop-14);
     ctx.fillText('detector', detX+10, tubeBot+26);
     ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11);
-    ctx.fillText('more ions of a mass \u2192 taller peak', startX+4, tubeBot+42);
     let allArrived=true;
     for (const io of ions){
       if (!io.arrived){ if (io.x<startX){ io.x+=io.v; allArrived=false; } else { io.x+=io.v; if (io.x>=detX){ io.x=detX; io.arrived=true; const pk=peaks[io.mi]; pk.arrivedCount++; pk.goal=0.9*(pk.arrivedCount/MAXCOUNT); } else allArrived=false; } }
