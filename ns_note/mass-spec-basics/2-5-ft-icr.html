@@ -58,14 +58,13 @@
         <span style="font-size:13px;color:var(--text3);">orbit &rarr; transient (beating) &rarr; Fourier transform &rarr; spectrum</span>
       </div>
       
-      <p class="ms-scroll-hint">↔ scroll sideways to see all three panels</p>
-      
-      <div class="ms-stage ms-stage-wide"><canvas id="ft-cv" style="height:400px;"></canvas></div>
+      <div class="ms-stage"><canvas id="ft-cv" style="height:520px;"></canvas></div>
       
       <div class="ms-legend">
         <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; orbits fast &rarr; high frequency</span>
         <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; orbits slow &rarr; low frequency</span>
-        <span style="color:var(--text3);">non-destructive measurement</span>
+        <span style="color:var(--text3);">more ions of a mass &rarr; taller peak (intensity)</span>
+        <span style="color:var(--text3);">signal decays as ions dephase (FID)</span>
       </div>
     </div>
 
@@ -101,54 +100,120 @@
   let W,H,dpr;
   function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
   const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba', GREEN='#1a5c3a';
-  const MASSES=[150,170,195];
+  /* Three ion species: mass, and how many ions of that mass are present.
+     Counts differ on purpose — this is what gives the spectrum peaks
+     different heights (intensity ∝ number of ions) and what weights each
+     frequency's contribution to the transient. */
+  const SPECIES=[
+    {mz:150, count:14},
+    {mz:168, count:30},   // most abundant -> tallest peak, dominates the transient
+    {mz:178, count:18},
+    {mz:195, count:8}
+  ];
+  const MAX_COUNT=Math.max.apply(null, SPECIES.map(s=>s.count));
   function freqFor(mz){ return 2.4*(170/mz); }
   function dotR(mz){ return 4+(mz-150)/45*4; }
-  const AMPS=[1.0,0.85,0.7];
+  /* how fast the transient decays (free induction decay). Larger DECAY_TAU
+     = slower decay = rings longer. Expressed in animation frames. */
+  const DECAY_TAU=180;
   let ions, t, transientBuf, maxBuf=260;
-  function reset(){ t=0; transientBuf=[]; ions=MASSES.map((mz,i)=>({mz,i,f:freqFor(mz),phase:i*0.6})); }
+  function reset(){
+    t=0; transientBuf=[];
+    /* Build the visible orbiting dots. To keep the cell readable we draw a
+       representative subset (cap per species), but the physics — frequency
+       weighting and peak height — always uses the true `count`. */
+    ions=[];
+    SPECIES.forEach((s,i)=>{
+      const shown=Math.min(s.count, 6);      // don't overcrowd the orbit
+      for (let k=0;k<shown;k++){
+        ions.push({mz:s.mz, i, f:freqFor(s.mz), phase:i*0.6 + k*0.20});
+      }
+    });
+  }
+
+  /* ── Layout: two zones ──────────────────────────────────────
+     TOP  band  (0 .. H*0.56): orbit cell (left) + transient (right)
+     LOW  band  (H*0.56 .. H): full-width spectrum
+     Every coordinate is a fraction of W/H, so the figure simply
+     shrinks to fit any viewport — no horizontal overflow. */
   function draw(){
     t++; ctx.clearRect(0,0,W,H);
-    const p1={x:0,w:W*0.40}, p2={x:W*0.40,w:W*0.32}, p3={x:W*0.72,w:W*0.28};
-    drawCell(p1); drawTransient(p2); drawSpectrum(p3);
+    const topH=H*0.56;
+    const cell={x:0, w:W*0.52, h:topH};
+    const trans={x:W*0.52, w:W*0.48, h:topH};
+    const spec={x:0, w:W, y:topH, h:H-topH};
+    drawCell(cell); drawTransient(trans); drawSpectrum(spec);
+    /* divider between top band and spectrum */
+    ctx.strokeStyle=LINE; ctx.globalAlpha=0.6; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(W*0.04, topH); ctx.lineTo(W*0.96, topH); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+    /* Auto re-excite once the transient has decayed to near zero, so the
+       loop keeps cycling like repeated FT-ICR acquisitions. A short pause
+       after full decay lets the viewer see the flat (dephased) signal. */
+    if (Math.exp(-t/DECAY_TAU) < 0.04 && t > DECAY_TAU*4) reset();
   }
+
   function drawCell(p){
-    const cx=p.x+p.w*0.52, cy=H*0.44, ax=p.w*0.28, ay=H*0.19;
-    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center'; MSUtil.fitText(ctx,'ions orbiting in magnetic field',p.w*0.92,12,8); ctx.fillText('ions orbiting in magnetic field', p.x+p.w/2, 24);
-    ctx.strokeStyle=MUTED; ctx.lineWidth=1.5; ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(cx,cy+ay*1.9); ctx.lineTo(cx,cy-ay*1.9); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.fillText('B', cx+12, cy-ay*1.75);
+    const cx=p.x+p.w*0.50, cy=p.h*0.52, ax=p.w*0.30, ay=p.h*0.26;
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center'; MSUtil.fitText(ctx,'ions orbiting in magnetic field',p.w*0.92,12,8); ctx.fillText('ions orbiting in magnetic field', p.x+p.w/2, 22);
+    ctx.strokeStyle=MUTED; ctx.lineWidth=1.5; ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(cx,cy+ay*1.7); ctx.lineTo(cx,cy-ay*1.7); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='left'; ctx.fillText('B', cx+12, cy-ay*1.55); ctx.textAlign='center';
     ctx.strokeStyle=LINE; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.moveTo(cx-ax*1.35,cy-ay*1.2); ctx.lineTo(cx+ax*1.35,cy-ay*1.2); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(cx-ax*1.35,cy+ay*1.2); ctx.lineTo(cx+ax*1.35,cy+ay*1.2); ctx.stroke();
-    ctx.fillStyle=MUTED; ctx.textAlign='left'; ctx.fillText('detection plate', cx-ax*1.35, cy-ay*1.2-8); ctx.textAlign='center';
+    ctx.beginPath(); ctx.moveTo(cx-ax*1.3,cy-ay*1.15); ctx.lineTo(cx+ax*1.3,cy-ay*1.15); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-ax*1.3,cy+ay*1.15); ctx.lineTo(cx+ax*1.3,cy+ay*1.15); ctx.stroke();
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,10); ctx.textAlign='left'; ctx.fillText('detection plate', cx-ax*1.3, cy-ay*1.15-7); ctx.textAlign='center';
     ctx.strokeStyle=LINE; ctx.globalAlpha=0.18; ctx.lineWidth=1; ctx.beginPath(); ctx.ellipse(cx,cy,ax,ay,0,0,6.283); ctx.stroke(); ctx.globalAlpha=1;
-    let sum=0;
-    for (const io of ions){ const ang=io.phase+t*0.05*io.f, px=cx+Math.cos(ang)*ax, py=cy+Math.sin(ang)*ay; ctx.beginPath(); ctx.arc(px,py,dotR(io.mz),0,6.283); ctx.fillStyle=GREEN; ctx.fill(); sum+=Math.sin(ang)*AMPS[io.i]; }
-    transientBuf.push(sum/ions.length); if (transientBuf.length>maxBuf) transientBuf.shift();
+    /* draw the representative orbiting dots */
+    for (const io of ions){ const ang=io.phase+t*0.05*io.f, px=cx+Math.cos(ang)*ax, py=cy+Math.sin(ang)*ay; ctx.beginPath(); ctx.arc(px,py,dotR(io.mz),0,6.283); ctx.fillStyle=GREEN; ctx.fill(); }
+    /* ── Compute the transient sample for this frame ──────────────
+       Sum one sine per SPECIES (all ions of a mass share phase after
+       excitation), weighted by how many ions that mass has, and multiply
+       by a decaying envelope (free induction decay). This is the honest
+       physics: number of ions sets each frequency's amplitude; number of
+       distinct m/z values is what creates the beating. */
+    const env=Math.exp(-t/DECAY_TAU);
+    let sig=0;
+    SPECIES.forEach((s,i)=>{ const ang=i*0.6 + t*0.05*freqFor(s.mz); sig += Math.sin(ang) * (s.count/MAX_COUNT); });
+    transientBuf.push((sig/SPECIES.length) * env);
+    if (transientBuf.length>maxBuf) transientBuf.shift();
   }
+
   function drawTransient(p){
-    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center'; MSUtil.fitText(ctx,'transient (time domain)',p.w*0.92,12,8); ctx.fillText('transient (time domain)', p.x+p.w/2, 24);
-    const midY=H*0.44, amp=H*0.17, x0=p.x+14, x1=p.x+p.w-20, n=transientBuf.length;
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center'; MSUtil.fitText(ctx,'transient (time domain)',p.w*0.92,12,8); ctx.fillText('transient (time domain)', p.x+p.w/2, 22);
+    const midY=p.h*0.50, amp=p.h*0.40, x0=p.x+14, x1=p.x+p.w-16, n=transientBuf.length;
     ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.globalAlpha=0.5; ctx.beginPath(); ctx.moveTo(x0,midY); ctx.lineTo(x1,midY); ctx.stroke(); ctx.globalAlpha=1;
     ctx.strokeStyle=GREEN; ctx.globalAlpha=0.28; ctx.lineWidth=1;
     for (const sign of [1,-1]){ ctx.beginPath(); for (let i=0;i<n;i++){ const x=x0+(i/(maxBuf-1))*(x1-x0); let mx=0; for (let j=Math.max(0,i-6);j<=Math.min(n-1,i+6);j++){ mx=Math.max(mx,Math.abs(transientBuf[j])); } const y=midY-sign*mx*amp; if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y); } ctx.stroke(); }
     ctx.globalAlpha=1;
     ctx.strokeStyle=GREEN; ctx.lineWidth=1.6; ctx.beginPath();
     for (let i=0;i<n;i++){ const x=x0+(i/(maxBuf-1))*(x1-x0), y=midY-transientBuf[i]*amp; if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y); } ctx.stroke();
-    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='center'; ctx.fillText('beating = frequencies add & cancel', p.x+p.w/2, H*0.74);
-    ctx.fillStyle=TEXT; ctx.font='18px sans-serif'; ctx.fillText('->', p.x+p.w-4, midY+6);
-    ctx.font=MSUtil.msFont(W,10); ctx.fillStyle=MUTED; ctx.fillText('FT', p.x+p.w-4, midY-8);
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,10); ctx.textAlign='center'; MSUtil.fitText(ctx,'beating (add & cancel) + decay',p.w*0.92,11,8); ctx.fillText('beating (add & cancel) + decay', p.x+p.w/2, p.h*0.90);
+    /* FT arrow pointing down toward the spectrum */
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='center'; ctx.fillText('Fourier transform', p.x+p.w/2, p.h-6);
   }
+
   function drawSpectrum(p){
-    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center'; MSUtil.fitText(ctx,'spectrum (after FT)',p.w*0.92,12,8); ctx.fillText('spectrum (after FT)', p.x+p.w/2, 24);
-    const baseY=H*0.66, x0=p.x+16, x1=p.x+p.w-10, plotH=H*0.34;
-    ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x0,baseY); ctx.lineTo(x1,baseY); ctx.stroke();
-    const mzMin=MASSES[0]*0.92, mzMax=MASSES[MASSES.length-1]*1.05, grow=Math.min(transientBuf.length/maxBuf,1);
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='left'; ctx.fillText('spectrum (after FT)', p.x+W*0.06, p.y+22);
+    const baseY=p.y+p.h*0.74, x0=p.x+W*0.08, x1=p.x+W*0.92, plotH=p.h*0.50;
+    /* y-axis + baseline */
+    ctx.strokeStyle=LINE; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x0,baseY); ctx.lineTo(x0,baseY-plotH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0,baseY); ctx.lineTo(x1,baseY); ctx.stroke();
+    const mzMin=SPECIES[0].mz*0.92, mzMax=SPECIES[SPECIES.length-1].mz*1.05, grow=Math.min(transientBuf.length/maxBuf,1);
     ctx.textAlign='center';
-    for (const io of ions){ const mx=(io.mz-mzMin)/(mzMax-mzMin), px=x0+mx*(x1-x0), h=plotH*AMPS[io.i]*grow; ctx.strokeStyle=GREEN; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(px,baseY); ctx.lineTo(px,baseY-h); ctx.stroke(); ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,10); ctx.fillText('m/z '+io.mz, px, baseY+14); }
-    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='center'; ctx.fillText('m/z ->', p.x+p.w/2, H*0.86);
-    ctx.textAlign='left'; ctx.fillText('low', x0, H*0.80); ctx.textAlign='right'; ctx.fillText('high', x1, H*0.80);
+    for (const s of SPECIES){
+      const mx=(s.mz-mzMin)/(mzMax-mzMin), px=x0+mx*(x1-x0);
+      /* peak height ∝ number of ions of this mass (intensity) */
+      const h=plotH*(s.count/MAX_COUNT)*grow;
+      ctx.strokeStyle=GREEN; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(px,baseY); ctx.lineTo(px,baseY-h); ctx.stroke();
+      ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,10); ctx.fillText('m/z '+s.mz, px, baseY+15);
+      /* ion-count tag above each peak, so the viewer links height -> count */
+      ctx.fillStyle=GREEN; ctx.font=MSUtil.msFont(W,10); ctx.fillText('n='+s.count, px, baseY-h-6);
+    }
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,10); ctx.textAlign='right'; ctx.fillText('m/z \u2192', x1, baseY+30);
+    ctx.save(); ctx.translate(x0-7, baseY); ctx.rotate(-Math.PI/2); ctx.textAlign='left'; ctx.fillText('intensity \u2192', 0, 0); ctx.restore();
   }
+
   replayBtn.addEventListener('click', reset);
   window.addEventListener('resize', fit);
   fit(); reset();
