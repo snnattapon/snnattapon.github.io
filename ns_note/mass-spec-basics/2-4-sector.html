@@ -47,33 +47,35 @@
         A <strong>magnetic sector</strong> accelerates ions to the same energy, then sends them through a
         magnetic field perpendicular to their motion. The Lorentz force bends each ion into an arc, and the
         radius depends on m/z: heavy ions curve gently (wide radius), light ions curve tightly (small
-        radius), so the beam fans apart.
+        radius), so the beam fans apart inside the magnet.
       </p>
       <h2>How it works</h2>
-      <p>Adjust the field strength B &mdash; only the ion whose radius matches passes through the slit to the detector; the rest hit the wall.</p>
+      <p>Ions enter together from the lower left and fan into arcs of different radius inside the curved magnet. Scan the field strength B &mdash; only the ion whose arc lands on the exit slit reaches the detector, and its peak lights up in the spectrum below; the rest strike the magnet wall.</p>
     </div>
 
     <div class="ms-figure">
       <div class="ms-controls">
         <div class="ms-control-inline">
           <label>Field strength B</label>
-          <input type="range" id="sec-b" min="70" max="160" value="110" step="1" />
-          <span id="sec-bout" style="font-weight:500;color:var(--text);min-width:44px;"></span>
+          <input type="range" id="sec-b" min="75" max="195" value="115" step="1" />
+          <span id="sec-bout" style="font-weight:500;color:var(--text);min-width:60px;"></span>
         </div>
+        <label class="ms-control-inline"><input type="checkbox" id="sec-trail" checked /> show ion trails</label>
       </div>
-      <div class="ms-stage"><canvas id="sec-cv" style="height:390px;"></canvas></div>
+      <div class="ms-stage"><canvas id="sec-cv" style="height:500px;"></canvas></div>
       <div class="ms-legend">
         <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; tighter curve</span>
         <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; wider curve</span>
-        <span><span class="dot" style="width:10px;height:10px;background:#D85A30;"></span>wrong radius &rarr; hits the wall</span>
+        <span><span class="dot" style="width:10px;height:10px;background:#D85A30;"></span>wrong radius &rarr; misses the slit</span>
+        <span style="color:var(--text3);">the m/z that exits &rarr; its peak lights up below</span>
       </div>
     </div>
 
     <div class="prose">
       <p>
-        By scanning the field strength, the sector selects which m/z reaches the detector. It also uses a
-        magnet &mdash; but note the difference from FT-ICR: a sector bends ions through a single pass, whereas
-        FT-ICR traps them to orbit many times.
+        By scanning the field strength, the sector selects which m/z reaches the detector, building the
+        spectrum one m/z at a time. It also uses a magnet &mdash; but note the difference from FT-ICR: a
+        sector bends ions through a single pass, whereas FT-ICR traps them to orbit many times.
       </p>
     </div>
 
@@ -89,6 +91,7 @@
   <div class="site-wrap">© 2026 Nattapon Simanon · Built with GitHub Pages</div>
 </footer>
 
+<script src="canvas-util.js"></script>
 <script src="nav.js"></script>
 <script>renderMsNav('sector');</script>
 
@@ -96,57 +99,237 @@
 (function(){
   const cv=document.getElementById('sec-cv'), ctx=cv.getContext('2d');
   const bS=document.getElementById('sec-b'), bOut=document.getElementById('sec-bout');
+  const trailChk=document.getElementById('sec-trail');
   let W,H,dpr;
   function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+
   const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba', GREEN='#1a5c3a', ORANGE='#D85A30';
-  const MASSES=[60,100,150,210];
+
+  /* ── Species ──────────────────────────────────────────────────
+     m/z present + a count (how many ions of that mass). Count sets
+     the peak height in the spectrum (intensity ∝ ion count), exactly
+     as on the orbitrap page. */
+  const SPECIES=[
+    {mz:60,  count:22},
+    {mz:100, count:30},   // tallest peak
+    {mz:150, count:16},
+    {mz:210, count:10}
+  ];
+  const MASSES=SPECIES.map(s=>s.mz);
+  const MAX_COUNT=Math.max.apply(null, SPECIES.map(s=>s.count));
+
+  /* ── Two stacked zones (mirrors the orbitrap page) ─────────────
+     TOP band : sector magnet + fanning ion arcs (top-down view)
+     LOW band : full-width mass spectrum */
+  const TOP_FRAC=0.64;
+  function topH(){ return H*TOP_FRAC; }
+
+  /* ── Geometry, panel-C style, physically faithful ─────────────
+     All ions ENTER at one point `E`, moving in one direction (the
+     entry velocity, pointing up-and-right). In a uniform field an ion
+     of radius R curves about a centre that sits perpendicular-left of
+     its velocity at distance R. So every ion's arc-centre lies on the
+     same line through E (the entry normal); larger R = centre further
+     out = gentler curve. All arcs start tangent at E and fan apart —
+     exactly the picture in panel C.
+
+     The EXIT SLIT is a fixed point on the far side. The ion whose
+     radius makes its arc pass through the slit gets through; others
+     miss. We pick the reference radius R_ref so the slit sits where
+     the mid-mass lands at mid-field. */
+  const SWEEP=Math.PI*0.60;                     // total arc the ions sweep (single pass)
+  const GAIN=1.2, BCENTER=105;                  // GAIN exaggerates the mass fan for readability;
+                                                // BCENTER is the field at which the mid mass is centred
+  function geom(){
+    const th=topH();
+    const E={ x:W*0.36, y:th*0.70 };            // entry point (lower-left)
+    let vx=0.50, vy=-0.65; const vl=Math.hypot(vx,vy); vx/=vl; vy/=vl;
+    const vdir={ x:vx, y:vy };                   // entry velocity (up-right), unit
+    const nrm={ x:-vy, y:vx };                   // rotate v by +90° => down-right; centres here
+    const rRef=th*0.40;                          // reference (slit) radius
+    return { th, E, vdir, nrm, rRef };
+  }
+
+  // arc centre for a given radius R: C = E + nrm * R
+  function centreFor(g,R){ return { x:g.E.x+g.nrm.x*R, y:g.E.y+g.nrm.y*R }; }
+  function entryAngle(g,R){
+    const C=centreFor(g,R);
+    return Math.atan2(g.E.y-C.y, g.E.x-C.x);
+  }
+  function pointOnArc(g,R,u){
+    const C=centreFor(g,R);
+    const a0=entryAngle(g,R);
+    const ang=a0 + SWEEP*u;                       // + => bends up-and-over to the right
+    return { x:C.x+Math.cos(ang)*R, y:C.y+Math.sin(ang)*R, C, ang, a0 };
+  }
+  function slitPoint(g){ return pointOnArc(g, g.rRef, 1); }
+
+  function radiusFor(mz,B){
+    const g=geom();
+    // Physically r ∝ sqrt(mz)/B (energy fixed). The sqrt compresses the
+    // four masses into a narrow radius band, so we exaggerate the spread
+    // from the reference by GAIN purely for on-screen readability — the
+    // ordering and scan behaviour stay faithful.
+    const base=Math.sqrt(mz)/Math.sqrt(100);
+    const dev=(base-1)*GAIN;
+    return g.rRef*(1+dev)*(BCENTER/B);
+  }
   function dotR(mz){ return 3.5+(mz-60)/150*4.5; }
+
+  const TRAIL_MAX=60;
   let ions=[], t=0;
-  function geom(){ return { pivotX:W*0.16, pivotY:H*0.40, entryY:H*0.86 }; }
-  function radiusFor(mz,B){ return (Math.sqrt(mz)*2600)/B; }
-  function spawn(){ ions.push({ mz:MASSES[Math.floor(Math.random()*MASSES.length)], phase:'straight', y:0, ang:0 }); }
-  function draw(){
-    t++; ctx.clearRect(0,0,W,H); const g=geom(); const B=+bS.value;
-    const slitRadius=radiusFor(120,110);
-    const cxField=g.pivotX+slitRadius, cyField=g.pivotY;
-    ctx.save(); ctx.beginPath();
-    ctx.moveTo(g.pivotX-30,g.pivotY+20);
-    ctx.arc(cxField,cyField,slitRadius+34,Math.PI,Math.PI*1.5);
-    ctx.arc(cxField,cyField,slitRadius-34,Math.PI*1.5,Math.PI,true);
-    ctx.closePath(); ctx.fillStyle=MUTED; ctx.globalAlpha=0.08; ctx.fill(); ctx.globalAlpha=1; ctx.restore();
-    ctx.fillStyle=MUTED; ctx.font='10px sans-serif'; ctx.textAlign='center';
-    for (let i=0;i<5;i++){ for (let j=0;j<3;j++){ ctx.fillText('x', g.pivotX+slitRadius*0.3+i*(slitRadius*0.12), g.pivotY-8-j*22); } }
-    ctx.fillStyle=TEXT; ctx.font='12px "Noto Sans Thai",sans-serif'; ctx.fillText('magnetic field (into page)', cxField, g.pivotY-slitRadius*0.5-10);
+  function spawn(){
+    const mz=MASSES[Math.floor(Math.random()*MASSES.length)];
+    ions.push({ mz, prog:0, speed:0.007+Math.random()*0.0025, trail:[] });
+  }
+
+  // radius band that spans all masses at the centre field, so the
+  // wedge always contains the full fan
+  function bandRadii(g){
+    let lo=1e9, hi=-1e9;
+    for(const mz of MASSES){ const r=radiusFor(mz,BCENTER); lo=Math.min(lo,r); hi=Math.max(hi,r); }
+    return { rIn:lo-26, rOut:hi+26 };
+  }
+  function drawMagnet(g){
+    const slit=slitPoint(g);
+    const { rIn, rOut }=bandRadii(g);
+    const C=centreFor(g,g.rRef);
+    const a0=entryAngle(g,g.rRef);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(C.x,C.y,rOut, a0-0.05, a0+SWEEP+0.05, false);
+    ctx.arc(C.x,C.y,rIn,  a0+SWEEP+0.05, a0-0.05, true);
+    ctx.closePath();
+    ctx.fillStyle=LINE; ctx.globalAlpha=0.12; ctx.fill();
+    ctx.globalAlpha=0.38; ctx.lineWidth=1.5; ctx.strokeStyle=LINE; ctx.stroke();
+    ctx.restore();
+
+    // field "" crosses along the mid radius
+    const rMid=(rIn+rOut)/2, Cm=centreFor(g,rMid), am=Math.atan2(g.E.y-Cm.y,g.E.x-Cm.x);
+    ctx.fillStyle=MUTED; ctx.globalAlpha=0.5; ctx.textAlign='center'; ctx.font=MSUtil.msFont(W,10);
+    for(let i=1;i<9;i++){ const aa=am+SWEEP*(i/9); ctx.fillText('×', Cm.x+Math.cos(aa)*rMid, Cm.y+Math.sin(aa)*rMid+3); }
+    ctx.globalAlpha=1;
+
+    // magnet label above the outer wall at mid-sweep
+    const Co=centreFor(g,rOut), ao=Math.atan2(g.E.y-Co.y,g.E.x-Co.x)+SWEEP*0.5;
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center';
+    ctx.fillText('magnetic field', Co.x+Math.cos(ao)*(rOut+22), Co.y+Math.sin(ao)*(rOut+22));
+
+    // entry channel + label
     ctx.strokeStyle=LINE; ctx.lineWidth=1.5; ctx.setLineDash([5,5]);
-    ctx.beginPath(); ctx.moveTo(g.pivotX-14,g.entryY); ctx.lineTo(g.pivotX-14,g.pivotY); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(g.pivotX+14,g.entryY); ctx.lineTo(g.pivotX+14,g.pivotY); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle=TEXT; ctx.textAlign='center'; ctx.fillText('ions in', g.pivotX, g.entryY+16); ctx.fillText('(same energy)', g.pivotX, g.entryY+30);
-    const exitX=cxField, exitY=g.pivotY-slitRadius;
+    const back={ x:g.E.x-g.vdir.x*48, y:g.E.y-g.vdir.y*48 };
+    ctx.beginPath(); ctx.moveTo(back.x,back.y); ctx.lineTo(g.E.x,g.E.y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=TEXT; ctx.textAlign='left';
+    ctx.fillText('ions in', back.x-28, back.y+16);
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,10);
+    ctx.fillText('(same energy)', back.x-28, back.y+30);
+
+    // exit slit marks + detector along the slit radial
+    const sdir={ x:(slit.x-C.x)/g.rRef, y:(slit.y-C.y)/g.rRef };     // radial (outward)
+    const tdir={ x:-sdir.y, y:sdir.x };                              // tangential
     ctx.strokeStyle=LINE; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.moveTo(exitX-22,exitY-14); ctx.lineTo(exitX-6,exitY-14); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(exitX+6,exitY-14); ctx.lineTo(exitX+22,exitY-14); ctx.stroke();
-    ctx.fillStyle=TEXT; ctx.fillText('slit', exitX, exitY-22);
-    ctx.lineWidth=2; ctx.strokeRect(exitX-16,exitY-52,32,26); ctx.fillText('detector', exitX, exitY-58);
-    if (t%9===0 && ions.length<30) spawn();
-    for (let i=ions.length-1;i>=0;i--){
-      const io=ions[i], rad=dotR(io.mz), R=radiusFor(io.mz,B), passes=Math.abs(R-slitRadius)<12;
-      if (io.phase==='straight'){
-        if (io.y===0) io.y=g.entryY; io.y-=2.4;
-        if (io.y<=g.pivotY){ io.phase='curve'; io.ang=Math.PI; io.R=R; io.passes=passes; }
-        ctx.beginPath(); ctx.arc(g.pivotX,io.y,rad,0,6.283); ctx.fillStyle=GREEN; ctx.fill();
-      } else if (io.phase==='curve'){
-        const myCx=g.pivotX+io.R, myCy=g.pivotY;
-        io.ang-=0.035;
-        const px=myCx+Math.cos(io.ang)*io.R, py=myCy+Math.sin(io.ang)*io.R;
-        if (io.ang<=Math.PI*0.5){ ions.splice(i,1); continue; }
-        if (io.R>slitRadius+40||io.R<slitRadius-40){ ctx.beginPath(); ctx.arc(px,py,rad,0,6.283); ctx.fillStyle=ORANGE; ctx.fill(); if (Math.random()<0.04) ions.splice(i,1); continue; }
-        ctx.beginPath(); ctx.arc(px,py,rad,0,6.283); ctx.fillStyle=io.passes?GREEN:ORANGE; ctx.fill();
-      }
-    }
+    ctx.beginPath();
+    ctx.moveTo(slit.x+tdir.x*8,  slit.y+tdir.y*8);
+    ctx.lineTo(slit.x+tdir.x*20, slit.y+tdir.y*20); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(slit.x-tdir.x*8,  slit.y-tdir.y*8);
+    ctx.lineTo(slit.x-tdir.x*20, slit.y-tdir.y*20); ctx.stroke();
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,11); ctx.textAlign='left';
+    ctx.fillText('exit slit', slit.x+tdir.x*24, slit.y+tdir.y*24+4);
+    // detector box beyond the slit
+    ctx.lineWidth=2; ctx.strokeStyle=LINE;
+    const dbx=slit.x+sdir.x*30, dby=slit.y+sdir.y*30;
+    ctx.strokeRect(dbx-15, dby-12, 30, 24);
+    ctx.fillStyle=TEXT; ctx.textAlign='center';
+    ctx.fillText('detector', dbx, dby-18);
+  }
+
+  function draw(){
+    t++; ctx.clearRect(0,0,W,H);
+    const g=geom(); const B=+bS.value; const slit=slitPoint(g);
+
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='center';
+    ctx.fillText('ions bend by mass → only the matching m/z exits the slit', W*0.5, 20);
+
+    drawMagnet(g);
+
+    // which mass currently exits? (arc radius closest to reference)
     let best=MASSES[0], bd=1e9;
-    for (const m of MASSES){ const d=Math.abs(radiusFor(m,B)-slitRadius); if(d<bd){ bd=d; best=m; } }
+    for(const m of MASSES){ const d=Math.abs(radiusFor(m,B)-g.rRef); if(d<bd){bd=d;best=m;} }
+    const passTol=g.rRef*0.05;
+
+    if (t%6===0 && ions.length<48) spawn();
+
+    for (let i=ions.length-1;i>=0;i--){
+      const io=ions[i]; const rad=dotR(io.mz);
+      const R=radiusFor(io.mz,B);
+      const passes=Math.abs(R-g.rRef)<passTol;
+      io.prog+=io.speed;
+      const u=Math.min(io.prog,1);
+      const p=pointOnArc(g,R,u);
+      const col = passes ? GREEN : ORANGE;
+
+      if (trailChk.checked){
+        io.trail.push({x:p.x,y:p.y});
+        if(io.trail.length>TRAIL_MAX) io.trail.shift();
+        ctx.strokeStyle=col; ctx.lineWidth=1.4; ctx.beginPath();
+        io.trail.forEach((pt,k)=>{ ctx.globalAlpha=(k/io.trail.length)*0.4; if(k===0)ctx.moveTo(pt.x,pt.y);else ctx.lineTo(pt.x,pt.y); });
+        ctx.stroke(); ctx.globalAlpha=1;
+      } else io.trail.length=0;
+
+      ctx.beginPath(); ctx.arc(p.x,p.y,rad,0,6.283); ctx.fillStyle=col; ctx.fill();
+
+      // wrong-radius ions "hit the wall": drop them partway through
+      if (!passes && io.prog>0.55 && Math.random()<0.06) { ions.splice(i,1); continue; }
+      if (io.prog>=1) ions.splice(i,1);
+    }
+
+    // divider
+    const th=topH();
+    ctx.strokeStyle=LINE; ctx.globalAlpha=0.6; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(W*0.04, th); ctx.lineTo(W*0.96, th); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+
+    drawSpectrum({ y:th, h:H-th }, best);
     bOut.textContent='m/z '+best;
   }
+
+  /* ── Mass spectrum (lower zone) ───────────────────────────────
+     A sector SCANS: at any field B, one m/z is on the slit. Each
+     peak's height ∝ its ion count, but the m/z currently selected is
+     drawn solid/lit and the others dimmed — the spectrum is built up
+     one m/z at a time as B is scanned (contrast the orbitrap, which
+     FT's a whole transient into a full spectrum at once). */
+  function drawSpectrum(p, selMz){
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='left';
+    ctx.fillText('spectrum (scanned m/z by m/z)', W*0.06, p.y+22);
+
+    const baseY=p.y+p.h*0.74, x0=W*0.08, x1=W*0.92, plotH=p.h*0.46;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x0,baseY); ctx.lineTo(x0,baseY-plotH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0,baseY); ctx.lineTo(x1,baseY); ctx.stroke();
+
+    const mzMin=SPECIES[0].mz*0.82, mzMax=SPECIES[SPECIES.length-1].mz*1.06;
+    ctx.textAlign='center';
+    for (const s of SPECIES){
+      const mx=(s.mz-mzMin)/(mzMax-mzMin), px=x0+mx*(x1-x0);
+      const h=plotH*(s.count/MAX_COUNT);
+      const isSel=(s.mz===selMz);
+      ctx.strokeStyle=GREEN; ctx.lineWidth=isSel?4:3; ctx.globalAlpha=isSel?1:0.26;
+      ctx.beginPath(); ctx.moveTo(px,baseY); ctx.lineTo(px,baseY-h); ctx.stroke();
+      ctx.globalAlpha=1;
+      ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,10);
+      ctx.fillText('m/z '+s.mz, px, baseY+15);
+      if(isSel){ ctx.fillStyle=GREEN; ctx.font=MSUtil.msFont(W,10); ctx.fillText('\u25c4 selected', px, baseY-h-6); }
+    }
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,10); ctx.textAlign='right';
+    ctx.fillText('m/z \u2192', x1, baseY+30);
+    ctx.save(); ctx.translate(x0-7, baseY); ctx.rotate(-Math.PI/2); ctx.textAlign='left';
+    ctx.fillText('intensity \u2192', 0, 0); ctx.restore();
+  }
+
+  bS.addEventListener('input', ()=>{ for(const io of ions) io.trail.length=0; });
+  trailChk.addEventListener('change', ()=>{ for(const io of ions) io.trail.length=0; });
   window.addEventListener('resize', fit);
   fit();
   let raf=null, running=false;
