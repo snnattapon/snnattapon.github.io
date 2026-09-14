@@ -50,7 +50,7 @@
         only on m/z, and that is what is measured.
       </p>
       <h2>How it works</h2>
-      <p>Watch the full cycle: ions are injected from the left, spiral for a while, then fade as the measurement ends.</p>
+      <p>Watch the full cycle: ions are injected from the left and spiral around the spindle (top), their axial oscillations build up the mass spectrum (bottom), then the signal fades as the measurement ends.</p>
     </div>
 
     <div class="ms-figure">
@@ -59,10 +59,11 @@
         <label class="ms-control-inline"><input type="checkbox" id="orb-trail" checked /> show spiral trail</label>
         <span id="orb-stage" style="font-size:13px;color:var(--text3);min-width:150px;"></span>
       </div>
-      <div class="ms-stage"><canvas id="orb-cv" style="height:400px;"></canvas></div>
+      <div class="ms-stage"><canvas id="orb-cv" style="height:560px;"></canvas></div>
       <div class="ms-legend">
         <span><span class="dot" style="width:7px;height:7px;background:#1a5c3a;"></span>light ion &rarr; oscillates fast</span>
         <span><span class="dot" style="width:13px;height:13px;background:#1a5c3a;"></span>heavy ion &rarr; oscillates slow</span>
+        <span style="color:var(--text3);">more ions of a mass &rarr; taller peak (intensity)</span>
         <span style="color:var(--text3);">measured without being destroyed &rarr; signal fades</span>
       </div>
     </div>
@@ -97,13 +98,35 @@
   let W,H,dpr;
   function fit(){ dpr=window.devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
   const TEXT='#555550', MUTED='#999990', LINE='#c9c4ba', GREEN='#1a5c3a';
-  const MASSES=[80,140,220];
+  /* Each species: mass, and how many ions of that mass are present.
+     The count sets peak height in the spectrum (intensity ∝ number of
+     ions). Counts fall off with mass here so the lightest ion (80) gives
+     the tallest peak. PER (below) still caps how many dots we actually
+     draw spiralling, to keep the cell readable — the physics uses count. */
+  const SPECIES=[
+    {mz:98,  count:30},   // lightest -> tallest peak
+    {mz:118, count:14},
+    {mz:140, count:18},
+    {mz:168, count:9},
+    {mz:190, count:12}
+  ];
+  const MASSES=SPECIES.map(s=>s.mz);
+  const MAX_COUNT=Math.max.apply(null, SPECIES.map(s=>s.count));
   function axFreqFor(mz){ return 0.9*Math.sqrt(120/mz); }
   function orbFreqFor(mz){ return 0.11*Math.sqrt(120/mz); }
-  function radiusFor(mz){ return 4+(mz-80)/140*4; }
+  function radiusFor(mz){ return 4+(mz-98)/92*4; }
   const PER=3, INJECT_DUR=60, ORBIT_DUR=300, FADE_DUR=90;
   let ions, t, cyclePhase, cycleT;
-  function geom(){ return { cx:W*0.44, cy:H*0.46, axHalf:W*0.30, rMax:H*0.20 }; }
+  /* ── Layout: two stacked zones ───────────────────────────────
+     TOP band (0 .. H*TOP_FRAC): spiral cell
+     LOW band (H*TOP_FRAC .. H): full-width mass spectrum
+     The spiral geometry is expressed relative to the TOP band only,
+     so it stays vertically inside its zone and doesn't overlap the
+     spectrum. cx is centred in the canvas width; the small left
+     inset keeps the "injection" label from being clipped. */
+  const TOP_FRAC=0.62;
+  function topH(){ return H*TOP_FRAC; }
+  function geom(){ const th=topH(); return { cx:W*0.50, cy:th*0.50, axHalf:W*0.28, rMax:th*0.30 }; }
   function reset(){
     t=0; cyclePhase='inject'; cycleT=0; ions=[];
     MASSES.forEach((mz,gi)=>{ for(let k=0;k<PER;k++){ ions.push({mz,gi,axPhase:Math.random()*6.283,orbPhase:(k/PER)*6.283+gi*0.6,axF:axFreqFor(mz),orbF:orbFreqFor(mz),rOrb:0.72+0.22*Math.random(),trail:[],injY:(Math.random()-0.5)*0.10}); } });
@@ -183,6 +206,43 @@
 
       ctx.globalAlpha=(depth<0?0.4:1)*alpha; ctx.beginPath(); ctx.arc(x,y,r2,0,6.283); ctx.fillStyle=GREEN; ctx.fill(); ctx.globalAlpha=1;
     }
+
+    /* divider between spiral cell (top) and spectrum (bottom) */
+    const th=topH();
+    ctx.strokeStyle=LINE; ctx.globalAlpha=0.6; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(W*0.04, th); ctx.lineTo(W*0.96, th); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+    drawSpectrum({ y:th, h:H-th });
+  }
+
+  /* ── Mass spectrum (lower zone) ───────────────────────────────
+     Peaks grow while the ions are being "measured" (inject builds up,
+     orbit fills in), reach full height by mid-orbit, and hold through
+     fade — mirroring an acquisition where the signal is integrated,
+     then the transient is Fourier-transformed into a fixed spectrum.
+     Peak height ∝ ion count (intensity). */
+  function specGrow(){
+    if (cyclePhase==='inject') return 0.12*(cycleT/INJECT_DUR);
+    if (cyclePhase==='orbit')  return Math.min(1, 0.12+0.88*(cycleT/(ORBIT_DUR*0.55)));
+    return 1;  // fade: hold the finished spectrum
+  }
+  function drawSpectrum(p){
+    ctx.fillStyle=TEXT; ctx.font=MSUtil.msFont(W,12); ctx.textAlign='left'; ctx.fillText('spectrum (after FT)', W*0.06, p.y+22);
+    const baseY=p.y+p.h*0.72, x0=W*0.08, x1=W*0.92, plotH=p.h*0.48;
+    ctx.strokeStyle=LINE; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x0,baseY); ctx.lineTo(x0,baseY-plotH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0,baseY); ctx.lineTo(x1,baseY); ctx.stroke();
+    const mzMin=SPECIES[0].mz*0.85, mzMax=SPECIES[SPECIES.length-1].mz*1.06, grow=specGrow();
+    ctx.textAlign='center';
+    for (const s of SPECIES){
+      const mx=(s.mz-mzMin)/(mzMax-mzMin), px=x0+mx*(x1-x0);
+      const h=plotH*(s.count/MAX_COUNT)*grow;
+      ctx.strokeStyle=GREEN; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(px,baseY); ctx.lineTo(px,baseY-h); ctx.stroke();
+      ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,10); ctx.fillText('m/z '+s.mz, px, baseY+15);
+      ctx.fillStyle=GREEN; ctx.font=MSUtil.msFont(W,10); ctx.fillText('n='+s.count, px, baseY-h-6);
+    }
+    ctx.fillStyle=MUTED; ctx.font=MSUtil.msFont(W,10); ctx.textAlign='right'; ctx.fillText('m/z \u2192', x1, baseY+30);
+    ctx.save(); ctx.translate(x0-7, baseY); ctx.rotate(-Math.PI/2); ctx.textAlign='left'; ctx.fillText('intensity \u2192', 0, 0); ctx.restore();
   }
   replayBtn.addEventListener('click', reset);
   trailChk.addEventListener('change', ()=>{ for(const io of ions) io.trail.length=0; });
